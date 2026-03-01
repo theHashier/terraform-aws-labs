@@ -14,18 +14,15 @@
 - IGW (Internet Gateway): lets the VPC reach the internet
 - Route table: rules for where traffic goes (0.0.0.0/0 = “any internet address”)
 
-## Cost
-- This lab is basically free (no NAT Gateway)
-
 ## Prereqs
 - Terraform installed
-- AWS CLI configured
-- Region: eu-central-1
+- AWS CLI configured (`aws configure`)
+- Region: eu-central-1 or you region.
 
 ## Run
-terraform init
-terraform plan
-terraform apply
+- terraform init
+- terraform plan
+- terraform apply or terraform apply -auto-approve(if you are sure) 
 
 ## Cleanup
-terraform destroy
+- terraform destroy

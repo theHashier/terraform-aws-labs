@@ -13,9 +13,9 @@
 - Region: eu-central-1 or you region.
 
 ## Run
-terraform init
-terraform plan
-terraform apply or terraform apply -auto-approve(if you are sure) 
+- terraform init
+- terraform plan
+- terraform apply or terraform apply -auto-approve(if you are sure) 
 
 ## Cleanup
-terraform destroy
+- terraform destroy
