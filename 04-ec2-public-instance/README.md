@@ -17,7 +17,7 @@
 
 ## Prereqs
 - Terraform installed
-- AWS CLI configured
+- AWS CLI configured (`aws configure`)
 - Region: eu-central-1
 - You must have an existing EC2 Key Pair name (for SSH)
 
@@ -32,7 +32,7 @@ ssh_cidr = "0.0.0.0/0"
 ## Run
 - terraform init
 - terraform plan
-- terraform apply
+- terraform apply or terraform apply -auto-approve(if you are sure)
 
 ## Cleanup
 - terraform destroy

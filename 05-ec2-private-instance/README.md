@@ -12,6 +12,11 @@
 - Private Subnet: A subnet that has NO route to the internet.
 - Private EC2: An EC2 instance without public IP that only other resources inside the VPC can reach.
 
+## Prereqs
+- Terraform installed
+- AWS CLI configured (`aws configure`)
+- Region: eu-central-1
+
 ## Why this exists
 In real production systems we never expose everything to the internet.
 
@@ -31,7 +36,7 @@ Only one t2.micro instance for free.
 ## Run
 - terraform init
 - terraform plan
-- terraform apply
+- terraform apply or terraform apply -auto-approve(if you are sure) 
 
 ## Cleanup
 - terraform destroy
