@@ -40,7 +40,7 @@ resource "aws_internet_gateway" "igw" {
   }
 }
 
-resource "aws_subnet" "public" {
+resource "aws_subnet" "public-subnet" {
   vpc_id                  = aws_vpc.vpc.id
   cidr_block              = "10.40.1.0/24"
   map_public_ip_on_launch = true
@@ -51,7 +51,7 @@ resource "aws_subnet" "public" {
   }
 }
 
-resource "aws_route_table" "public" {
+resource "aws_route_table" "public-route-table" {
   vpc_id = aws_vpc.vpc.id
 
   route {
@@ -64,9 +64,9 @@ resource "aws_route_table" "public" {
   }
 }
 
-resource "aws_route_table_association" "public" {
-  subnet_id      = aws_subnet.public.id
-  route_table_id = aws_route_table.public.id
+resource "aws_route_table_association" "public-route-table-association" {
+  subnet_id      = aws_subnet.public-subnet.id
+  route_table_id = aws_route_table.public-route-table.id
 }
 
 resource "aws_security_group" "sg" {
@@ -113,10 +113,10 @@ data "aws_ami" "al2023" {
   }
 }
 
-resource "aws_instance" "ec2" {
+resource "aws_instance" "public-ec2" {
   ami                    = data.aws_ami.al2023.id
   instance_type          = "t2.micro"
-  subnet_id              = aws_subnet.public.id
+  subnet_id              = aws_subnet.public-subnet.id
   vpc_security_group_ids = [aws_security_group.sg.id]
   key_name               = var.key_name
 
@@ -126,13 +126,13 @@ resource "aws_instance" "ec2" {
 }
 
 output "instance_id" {
-  value = aws_instance.ec2.id
+  value = aws_instance.public-ec2.id
 }
 
 output "public_ip" {
-  value = aws_instance.ec2.public_ip
+  value = aws_instance.public-ec2.public_ip
 }
 
 output "public_dns" {
-  value = aws_instance.ec2.public_dns
+  value = aws_instance.public-ec2.public_dns
 }

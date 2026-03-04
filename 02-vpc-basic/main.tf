@@ -31,7 +31,7 @@ resource "aws_internet_gateway" "igw" {
   }
 }
 
-resource "aws_subnet" "public" {
+resource "aws_subnet" "public-subnet" {
   vpc_id                  = aws_vpc.vpc.id
   cidr_block              = "10.0.1.0/24"
   availability_zone       = "eu-central-1a"
@@ -42,7 +42,7 @@ resource "aws_subnet" "public" {
   }
 }
 
-resource "aws_route_table" "route_table" {
+resource "aws_route_table" "public-route-table" {
   vpc_id = aws_vpc.vpc.id
 
   tags = {
@@ -51,14 +51,14 @@ resource "aws_route_table" "route_table" {
 }
 
 resource "aws_route" "public_internet" {
-  route_table_id         = aws_route_table.route_table.id
+  route_table_id         = aws_route_table.public-route-table.id
   destination_cidr_block = "0.0.0.0/0"
   gateway_id             = aws_internet_gateway.igw.id
 }
 
 resource "aws_route_table_association" "public" {
-  subnet_id      = aws_subnet.public.id
-  route_table_id = aws_route_table.route_table.id
+  subnet_id      = aws_subnet.public-subnet.id
+  route_table_id = aws_route_table.public-route-table.id
 }
 
 output "vpc_id" {
@@ -66,5 +66,5 @@ output "vpc_id" {
 }
 
 output "public_subnet_id" {
-  value = aws_subnet.public.id
+  value = aws_subnet.public-subnet.id
 }
