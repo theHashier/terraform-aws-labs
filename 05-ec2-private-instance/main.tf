@@ -28,7 +28,7 @@ resource "aws_vpc" "vpc" {
   cidr_block = "10.0.0.0/16"
 
   tags = {
-    Name = "lab-05-vpc"
+    Name = "05-ec2-private-instance:vpc"
   }
 }
 
@@ -38,7 +38,7 @@ resource "aws_subnet" "public-subnet" {
   map_public_ip_on_launch = true
 
   tags = {
-    Name = "lab-05-public-subnet"
+    Name = "05-ec2-private-instance:public-subnet"
   }
 }
 
@@ -47,7 +47,7 @@ resource "aws_subnet" "private-subnet" {
   cidr_block = "10.0.2.0/24"
 
   tags = {
-    Name = "lab-04-private-subnet"
+    Name = "05-ec2-private-instance:private-subnet"
   }
 }
 
@@ -55,7 +55,7 @@ resource "aws_internet_gateway" "igw" {
   vpc_id = aws_vpc.vpc.id
 
   tags = {
-    Name = "lab-05-igw"
+    Name = "05-ec2-private-instance:igw"
   }
 }
 
@@ -63,7 +63,7 @@ resource "aws_route_table" "public_route_table" {
   vpc_id = aws_vpc.vpc.id
 
   tags = {
-    Name = "lab-05-public-rt"
+    Name = "05-ec2-private-instance:public-route-table"
   }
 }
 
@@ -84,7 +84,7 @@ resource "aws_instance" "private_ec2" {
   subnet_id     = aws_subnet.private-subnet.id
 
   tags = {
-    Name = "lab-05-private-ec2"
+    Name = "05-ec2-private-instance:private-ec2"
   }
 }
 

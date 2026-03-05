@@ -28,7 +28,7 @@ resource "aws_vpc" "vpc" {
   enable_dns_support   = true
 
   tags = {
-    Name = "lab-04-vpc"
+    Name = "04-public-instance:vpc"
   }
 }
 
@@ -36,7 +36,7 @@ resource "aws_internet_gateway" "igw" {
   vpc_id = aws_vpc.vpc.id
 
   tags = {
-    Name = "lab-04-igw"
+    Name = "04-public-instance:igw"
   }
 }
 
@@ -47,7 +47,7 @@ resource "aws_subnet" "public-subnet" {
   availability_zone       = "eu-central-1a"
 
   tags = {
-    Name = "lab-04-public-subnet"
+    Name = "04-public-instance:public-subnet"
   }
 }
 
@@ -60,7 +60,7 @@ resource "aws_route_table" "public-route-table" {
   }
 
   tags = {
-    Name = "lab-04-public-rt"
+    Name = "04-public-instance:public-route-table"
   }
 }
 
@@ -69,7 +69,7 @@ resource "aws_route_table_association" "public-route-table-association" {
   route_table_id = aws_route_table.public-route-table.id
 }
 
-resource "aws_security_group" "sg" {
+resource "aws_security_group" "ssh-sg" {
   name        = "lab-04-sg"
   description = "Lab 04 SG"
   vpc_id      = aws_vpc.vpc.id
@@ -89,7 +89,7 @@ resource "aws_security_group" "sg" {
   }
 
   tags = {
-    Name = "lab-04-sg"
+    Name = "04-public-instance:ssh-sg"
   }
 }
 
@@ -117,11 +117,11 @@ resource "aws_instance" "public-ec2" {
   ami                    = data.aws_ami.al2023.id
   instance_type          = "t2.micro"
   subnet_id              = aws_subnet.public-subnet.id
-  vpc_security_group_ids = [aws_security_group.sg.id]
+  vpc_security_group_ids = [aws_security_group.ssh-sg.id]
   key_name               = var.key_name
 
   tags = {
-    Name = "lab-04-ec2-public"
+    Name = "04-public-instance:public-ec2"
   }
 }
 

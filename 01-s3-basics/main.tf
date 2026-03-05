@@ -17,7 +17,7 @@ resource "aws_s3_bucket" "s3" {
   bucket_prefix = "eugen-tf-s3-"
 
   tags = {
-    Name = "01-s3-basic"
+    Name = "01-s3-basic:s3"
   }
 }
 

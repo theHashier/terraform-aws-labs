@@ -19,7 +19,7 @@ resource "aws_vpc" "vpc" {
   enable_dns_hostnames = true
 
   tags = {
-    Name = "02-vpc-basic"
+    Name = "02-vpc-basic:vpc"
   }
 }
 
@@ -27,7 +27,7 @@ resource "aws_internet_gateway" "igw" {
   vpc_id = aws_vpc.vpc.id
 
   tags = {
-    Name = "02-vpc-basic-igw"
+    Name = "02-vpc-basic:igw"
   }
 }
 
@@ -38,7 +38,7 @@ resource "aws_subnet" "public-subnet" {
   map_public_ip_on_launch = true
 
   tags = {
-    Name = "02-vpc-basic-public"
+    Name = "02-vpc-basic:public"
   }
 }
 
@@ -46,11 +46,11 @@ resource "aws_route_table" "public-route-table" {
   vpc_id = aws_vpc.vpc.id
 
   tags = {
-    Name = "02-vpc-basic-public-rt"
+    Name = "02-vpc-basic:public-route-table"
   }
 }
 
-resource "aws_route" "public_internet" {
+resource "aws_route" "internet-access" {
   route_table_id         = aws_route_table.public-route-table.id
   destination_cidr_block = "0.0.0.0/0"
   gateway_id             = aws_internet_gateway.igw.id
