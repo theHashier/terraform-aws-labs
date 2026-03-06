@@ -32,40 +32,40 @@ Connect to the instance using **SSM Session Manager**.
 
 Check the disks:
 
-lsblk
+- lsblk
 
 You should see something similar to:
 
-xvda  → root disk (OS)  
-xvdf  → new EBS disk
+- xvda  → root disk (OS)  
+- xvdf  → new EBS disk
 
 Format the disk:
 
-sudo mkfs -t xfs /dev/xvdf
+- sudo mkfs -t xfs /dev/xvdf
 
 Create mount point:
 
-sudo mkdir /data
+- sudo mkdir /data
 
 Mount the disk:
 
-sudo mount /dev/xvdf /data
+- sudo mount /dev/xvdf /data
 
 Verify mount:
 
-df -h
+- df -h
 
 Create test file:
 
-echo "EBS disaster recovery test" | sudo tee /data/test.txt
+- echo "EBS disaster recovery test" | sudo tee /data/test.txt
 
 Check if file exists:
 
-ls /data
+- ls /data
 
 Read the file:
 
-cat /data/test.txt
+- cat /data/test.txt
 
 ## Create Snapshot
 Go to:
@@ -77,8 +77,8 @@ Select the extra disk and create a snapshot.
 
 Important: the snapshot must contain the following tag:
 
-Key: lab09  
-Value: disasterandrecovery
+- Key: lab09  
+- Value: disasterandrecovery
 
 This tag is required because the disaster recovery Terraform code searches the snapshot using this tag.
 
@@ -114,47 +114,47 @@ Connect to the instance using **SSM Session Manager**.
 
 Check the disks:
 
-lsblk
+- lsblk
 
 You should see something similar to:
 
-xvda  → root disk (OS)  
-xvdf  → new EBS disk
+- xvda  → root disk (OS)  
+- xvdf  → new EBS disk
 
 Format the disk:
 
-sudo mkfs -t xfs /dev/xvdf
+- sudo mkfs -t xfs /dev/xvdf
 
 Create mount point:
 
-sudo mkdir /data
+- sudo mkdir /data
 
 Mount the disk:
 
-sudo mount /dev/xvdf /data
+- sudo mount /dev/xvdf /data
 
 Verify mount:
 
-df -h
+- df -h
 
 Check if file exists:
 
-ls /data
+- ls /data
 
 Read the file:
 
-cat /data/test.txt
+- cat /data/test.txt
 
 You get what you saved into the file:
 
-"EBS disaster recovery test"
+- "EBS disaster recovery test"
 
 This means it worked, you recovered the lost data with the help of that snapshot.
 
 ## Important Tag Requirement
 Both Terraform configurations depend on the same tag:
 
-Key: lab09  
-Value: disasterandrecovery
+- Key: lab09  
+- Value: disasterandrecovery
 
 If the snapshot does not contain this tag, the recovery Terraform will not find it.

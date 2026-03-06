@@ -40,28 +40,28 @@ After apply connect to the instance using **SSM Session Manager**.
 
 Check disks:
 
-lsblk
+- lsblk
 
 Verify the filesystem exists:
 
-sudo file -s /dev/xvdf
+- sudo file -s /dev/xvdf
 
 Mount the disk:
 
-sudo mkdir /data
-sudo mount /dev/xvdf /data
+- sudo mkdir /data
+- sudo mount /dev/xvdf /data
 
 Check restored file:
 
-ls /data
+- ls /data
 
 Read the file:
 
-cat /data/test.txt
+- cat /data/test.txt
 
 Expected output:
 
-EBS disaster recovery test
+- "EBS disaster recovery test"
 
 ## Cleanup
 - terraform destroy
