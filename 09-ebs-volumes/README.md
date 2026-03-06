@@ -1,4 +1,3 @@
-cat > README.md <<'EOF'
 # Lab 09 - EBS Volumes
 
 ## What this builds
