@@ -30,9 +30,11 @@ After apply, Terraform will output the ALB DNS name.
 
 Open the DNS name in a browser:
 
-http://<alb-dns>
+http://alb dns comes here
 
-Traffic will be routed to EC2 instances.
+Traffic will be routed to 2 EC2 instances.
+Make sure to check the ip adress changes when you reload the page many times, this means the ALB works fine.
+It is the text you can read on page load like Hello from ... ip
 
 ## Cleanup
 - terraform destroy
