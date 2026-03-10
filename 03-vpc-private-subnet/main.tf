@@ -25,7 +25,7 @@ resource "aws_vpc" "vpc" {
   enable_dns_hostnames = true
 
   tags = {
-    Name = "03-vpc-private-subnet:vpc"
+    Name = "03-vpc-private-subnet-vpc"
   }
 }
 
@@ -33,7 +33,7 @@ resource "aws_internet_gateway" "igw" {
   vpc_id = aws_vpc.vpc.id
 
   tags = {
-    Name = "03-vpc-private-subnet:igw"
+    Name = "03-vpc-private-subnet-igw"
   }
 }
 
@@ -44,7 +44,7 @@ resource "aws_subnet" "public-subnet" {
   map_public_ip_on_launch = true
 
   tags = {
-    Name = "03-vpc-private-subnet:public-subnet"
+    Name = "03-vpc-private-subnet-public-subnet"
   }
 }
 
@@ -55,7 +55,7 @@ resource "aws_subnet" "private-subnet" {
   map_public_ip_on_launch = false
 
   tags = {
-    Name = "03-vpc-private-subnet:private-subnet"
+    Name = "03-vpc-private-subnet-private-subnet"
   }
 }
 
@@ -63,7 +63,7 @@ resource "aws_route_table" "public-route_table" {
   vpc_id = aws_vpc.vpc.id
 
   tags = {
-    Name = "03-vpc-private-subnet:public-route-table"
+    Name = "03-vpc-private-subnet-public-route-table"
   }
 }
 
@@ -82,7 +82,7 @@ resource "aws_route_table" "private-route_table" {
   vpc_id = aws_vpc.vpc.id
 
   tags = {
-    Name = "03-vpc-private-subnet:private-route-table"
+    Name = "03-vpc-private-subnet-private-route-table"
   }
 }
 
@@ -98,7 +98,7 @@ resource "aws_vpc_endpoint" "s3" {
   route_table_ids   = [aws_route_table.private-route_table.id]
 
   tags = {
-    Name = "03-vpc-private-subnet:s3-endpoint"
+    Name = "03-vpc-private-subnet-s3-endpoint"
   }
 }
 

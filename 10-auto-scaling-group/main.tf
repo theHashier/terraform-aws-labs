@@ -24,7 +24,7 @@ data "aws_ami" "al2023" {
   owners = ["amazon"]
 }
 
-resource "aws_launch_template" "ec2_template" {
+resource "aws_launch_template" "ec2-template" {
   name_prefix   = "10-auto-scaling-"
   image_id      = data.aws_ami.al2023.id
   instance_type = "t2.micro"
@@ -33,7 +33,7 @@ resource "aws_launch_template" "ec2_template" {
     resource_type = "instance"
 
     tags = {
-      Name = "10-auto-scaling:ec2"
+      Name = "10-auto-scaling-ec2"
     }
   }
 }
@@ -46,7 +46,7 @@ resource "aws_autoscaling_group" "asg" {
   max_size         = 2
 
   launch_template {
-    id      = aws_launch_template.ec2_template.id
+    id      = aws_launch_template.ec2-template.id
     version = "$Latest"
   }
 
@@ -54,7 +54,7 @@ resource "aws_autoscaling_group" "asg" {
 
   tag {
     key                 = "Name"
-    value               = "10-auto-scaling:instance"
+    value               = "10-auto-scaling-instance"
     propagate_at_launch = true
   }
 }

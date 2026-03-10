@@ -89,7 +89,7 @@ resource "aws_security_group" "ssh-sg" {
   }
 
   tags = {
-    Name = "04-public-instance:ssh-sg"
+    Name = "04-public-instance-ssh-sg"
   }
 }
 
@@ -121,7 +121,7 @@ resource "aws_instance" "public-ec2" {
   key_name               = var.key_name
 
   tags = {
-    Name = "04-public-instance:public-ec2"
+    Name = "04-public-instance-public-ec2"
   }
 }
 

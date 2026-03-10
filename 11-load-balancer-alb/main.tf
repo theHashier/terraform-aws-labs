@@ -35,7 +35,7 @@ data "aws_ami" "al2023" {
   owners = ["amazon"]
 }
 
-resource "aws_security_group" "alb_security_group" {
+resource "aws_security_group" "asg_security_group" {
   name   = "11-alb-sg"
   vpc_id = data.aws_vpc.default.id
 
@@ -80,7 +80,7 @@ resource "aws_lb" "alb" {
   security_groups    = [aws_security_group.alb_security_group.id]
 
   tags = {
-    Name = "11-load-balancer-alb:alb"
+    Name = "11-load-balancer-alb-alb"
   }
 }
 
@@ -102,7 +102,7 @@ resource "aws_lb_listener" "listener" {
   }
 }
 
-resource "aws_launch_template" "ec2_template" {
+resource "aws_launch_template" "ec2-template" {
   name_prefix   = "11-alb-asg-"
   image_id      = data.aws_ami.al2023.id
   instance_type = "t2.micro"
@@ -111,7 +111,7 @@ resource "aws_launch_template" "ec2_template" {
 
   user_data = base64encode(<<EOF
 #!/bin/bash
-yum install -y httpd
+dnf install -y httpd
 systemctl start httpd
 systemctl enable httpd
 echo "Hello from $(hostname)" > /var/www/html/index.html
@@ -137,7 +137,7 @@ resource "aws_autoscaling_group" "asg" {
   vpc_zone_identifier = data.aws_subnets.default.ids
 
   launch_template {
-    id      = aws_launch_template.ec2_template.id
+    id      = aws_launch_template.ec2-template.id
     version = "$Latest"
   }
 

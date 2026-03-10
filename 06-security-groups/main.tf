@@ -22,7 +22,7 @@ resource "aws_vpc" "vpc" {
 }
 
 resource "aws_security_group" "ssh-http-https-sg" {
-  name        = "06-security-groups:ssh-http-https-sg"
+  name        = "06-security-groups-ssh-http-https-sg"
   description = "Allow SSH HTTP HTTPS"
   vpc_id      = aws_vpc.vpc.id
 
@@ -58,7 +58,7 @@ resource "aws_security_group" "ssh-http-https-sg" {
   }
 
   tags = {
-    Name = "06-security-groups:ssh-http-https-sg"
+    Name = "06-security-groups-ssh-http-https-sg"
   }
 }
 

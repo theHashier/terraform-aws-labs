@@ -24,8 +24,8 @@ data "aws_ami" "al2023" {
   owners = ["amazon"]
 }
 
-resource "aws_iam_role" "ec2_role" {
-  name = "08--ec2-with-ssm@ec2-role"
+resource "aws_iam_role" "ec2-role" {
+  name = "08-ec2-with-ssm-ec2-role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -41,26 +41,26 @@ resource "aws_iam_role" "ec2_role" {
   })
 }
 
-resource "aws_iam_role_policy_attachment" "attach_policy" {
-  role       = aws_iam_role.ec2_role.name
+resource "aws_iam_role_policy_attachment" "attach-policy" {
+  role       = aws_iam_role.ec2-role.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
 }
 
-resource "aws_iam_instance_profile" "ec2_profile" {
-  name = "08-ec2-with-ssm@ec2-profile"
-  role = aws_iam_role.ec2_role.name
+resource "aws_iam_instance_profile" "ec2-profile" {
+  name = "08-ec2-with-ssm-ec2-profile"
+  role = aws_iam_role.ec2-role.name
 }
 
-resource "aws_instance" "public_ec2" {
+resource "aws_instance" "public-ec2" {
   ami                  = data.aws_ami.al2023.id
   instance_type        = "t2.micro"
-  iam_instance_profile = aws_iam_instance_profile.ec2_profile.name
+  iam_instance_profile = aws_iam_instance_profile.ec2-profile.name
 
   tags = {
-    Name = "08-ec2-with-ssm:public-ec2"
+    Name = "08-ec2-with-ssm-public-ec2"
   }
 }
 
 output "instance_id" {
-  value = aws_instance.public_ec2.id
+  value = aws_instance.public-ec2.id
 }
