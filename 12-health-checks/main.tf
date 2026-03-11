@@ -17,76 +17,79 @@ provider "aws" {
 # STEP 1 — NETWORK
 ########################
 
-resource "aws_vpc" "vpc" {
+resource "aws_vpc" "lab12_vpc" {
   cidr_block           = "10.12.0.0/16"
   enable_dns_support   = true
   enable_dns_hostnames = true
 
   tags = {
-    Name = "12-health-checks-vpc"
+    Name        = "lab12-vpc"
+    Environment = "lab"
+    ManagedBy   = "terraform"
+    Owner       = "Eugen"
   }
 }
 
-resource "aws_subnet" "public-subnet-a" {
-  vpc_id                  = aws_vpc.vpc.id
+resource "aws_subnet" "public_subnet_a" {
+  vpc_id                  = aws_vpc.lab12_vpc.id
   cidr_block              = "10.12.1.0/24"
   availability_zone       = "eu-central-1a"
   map_public_ip_on_launch = true
 
   tags = {
-    Name = "12-health-checks-public-subnet-a"
+    Name = "lab12-public-subnet-a"
   }
 }
 
-resource "aws_subnet" "public-subnet-b" {
-  vpc_id                  = aws_vpc.vpc.id
+resource "aws_subnet" "public_subnet_b" {
+  vpc_id                  = aws_vpc.lab12_vpc.id
   cidr_block              = "10.12.2.0/24"
   availability_zone       = "eu-central-1b"
   map_public_ip_on_launch = true
 
   tags = {
-    Name = "12-health-checks-public-subnet-b"
+    Name = "lab12-public-subnet-b"
   }
 }
 
-resource "aws_internet_gateway" "igw" {
-  vpc_id = aws_vpc.vpc.id
+resource "aws_internet_gateway" "lab12_igw" {
+  vpc_id = aws_vpc.lab12_vpc.id
 
   tags = {
-    Name = "12-health-checks-igw"
+    Name = "lab12-igw"
   }
 }
 
-resource "aws_route_table" "route-table" {
-  vpc_id = aws_vpc.vpc.id
+resource "aws_route_table" "public_rt" {
+  vpc_id = aws_vpc.lab12_vpc.id
 
   route {
     cidr_block = "0.0.0.0/0"
-    gateway_id = aws_internet_gateway.igw.id
+    gateway_id = aws_internet_gateway.lab12_igw.id
   }
 
   tags = {
-    Name = "12-health-checks-route-table"
+    Name = "lab12-public-rt"
   }
 }
 
-resource "aws_route_table_association" "public_a" {
-  subnet_id      = aws_subnet.public-subnet-a.id
-  route_table_id = aws_route_table.route-table.id
+resource "aws_route_table_association" "public_a_assoc" {
+  subnet_id      = aws_subnet.public_subnet_a.id
+  route_table_id = aws_route_table.public_rt.id
 }
 
-resource "aws_route_table_association" "public_b" {
-  subnet_id      = aws_subnet.public-subnet-b.id
-  route_table_id = aws_route_table.route-table.id
+resource "aws_route_table_association" "public_b_assoc" {
+  subnet_id      = aws_subnet.public_subnet_b.id
+  route_table_id = aws_route_table.public_rt.id
 }
 
 ########################
 # STEP 2 — SECURITY
 ########################
 
-resource "aws_security_group" "alb-sg" {
-  name   = "12-health-checks-alb-sg"
-  vpc_id = aws_vpc.vpc.id
+resource "aws_security_group" "alb_sg" {
+  name   = "lab12-alb-sg"
+  vpc_id = aws_vpc.lab12_vpc.id
 
   ingress {
     from_port   = 80
@@ -103,15 +106,15 @@ resource "aws_security_group" "alb-sg" {
   }
 }
 
-resource "aws_security_group" "ec2-sg" {
-  name   = "12-health-checks-ec2-sg"
-  vpc_id = aws_vpc.vpc.id
+resource "aws_security_group" "ec2_sg" {
+  name   = "lab12-ec2-sg"
+  vpc_id = aws_vpc.lab12_vpc.id
 
   ingress {
     from_port       = 80
     to_port         = 80
     protocol        = "tcp"
-    security_groups = [aws_security_group.alb-sg.id]
+    security_groups = [aws_security_group.alb_sg.id]
   }
 
   egress {
@@ -123,11 +126,11 @@ resource "aws_security_group" "ec2-sg" {
 }
 
 ########################
-# STEP 3 — IAM (SSM)
+# STEP 3 — IAM
 ########################
 
-resource "aws_iam_role" "ec2-role" {
-  name = "12-health-checks-ec2-role"
+resource "aws_iam_role" "ec2_role" {
+  name = "lab12-ec2-role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -141,14 +144,14 @@ resource "aws_iam_role" "ec2-role" {
   })
 }
 
-resource "aws_iam_role_policy_attachment" "ssm" {
-  role       = aws_iam_role.ec2-role.name
+resource "aws_iam_role_policy_attachment" "ssm_attach" {
+  role       = aws_iam_role.ec2_role.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
 }
 
-resource "aws_iam_instance_profile" "ec2" {
-  name = "12-health-checks-ec2-profile"
-  role = aws_iam_role.ec2-role.name
+resource "aws_iam_instance_profile" "ec2_profile" {
+  name = "lab12-ec2-profile"
+  role = aws_iam_role.ec2_role.name
 }
 
 ########################
@@ -170,14 +173,14 @@ data "aws_ami" "al2023" {
 # STEP 5 — EC2
 ########################
 
-resource "aws_instance" "public-ec2" {
+resource "aws_instance" "public_ec2" {
   ami                         = data.aws_ami.al2023.id
   instance_type               = "t2.micro"
-  subnet_id                   = aws_subnet.public-subnet-a.id
+  subnet_id                   = aws_subnet.public_subnet_a.id
   associate_public_ip_address = true
 
-  vpc_security_group_ids = [aws_security_group.ec2-sg.id]
-  iam_instance_profile   = aws_iam_instance_profile.ec2.name
+  vpc_security_group_ids = [aws_security_group.ec2_sg.id]
+  iam_instance_profile   = aws_iam_instance_profile.ec2_profile.name
 
   user_data = <<EOF
 #!/bin/bash
@@ -187,7 +190,7 @@ echo "healthy" > /var/www/html/index.html
 EOF
 
   tags = {
-    Name = "12-health-checks-public-ec2"
+    Name = "lab12-public-ec2"
   }
 }
 
@@ -200,15 +203,15 @@ resource "aws_lb" "alb" {
   load_balancer_type = "application"
   internal           = false
 
-  security_groups = [aws_security_group.alb.id]
-  subnets         = [aws_subnet.public_a.id, aws_subnet.public_b.id]
+  security_groups = [aws_security_group.alb_sg.id]
+  subnets         = [aws_subnet.public_subnet_a.id, aws_subnet.public_subnet_b.id]
 }
 
-resource "aws_lb_target_group" "public-alb" {
-  name     = "lab12-target-group"
+resource "aws_lb_target_group" "web_tg" {
+  name     = "lab12-web-tg"
   port     = 80
   protocol = "HTTP"
-  vpc_id   = aws_vpc.vpc.id
+  vpc_id   = aws_vpc.lab12_vpc.id
 
   health_check {
     path                = "/"
@@ -220,10 +223,12 @@ resource "aws_lb_target_group" "public-alb" {
   }
 }
 
-resource "aws_lb_target_group_attachment" "public-target-group-attachment" {
-  target_group_arn = aws_lb_target_group.public-alb.arn
-  target_id        = aws_instance.public-ec2.id
+resource "aws_lb_target_group_attachment" "ec2_attach" {
+  target_group_arn = aws_lb_target_group.web_tg.arn
+  target_id        = aws_instance.public_ec2.id
   port             = 80
+
+  depends_on = [aws_instance.public_ec2]
 }
 
 resource "aws_lb_listener" "http" {
@@ -233,7 +238,7 @@ resource "aws_lb_listener" "http" {
 
   default_action {
     type             = "forward"
-    target_group_arn = aws_lb_target_group.public-alb.arn
+    target_group_arn = aws_lb_target_group.web_tg.arn
   }
 }
 

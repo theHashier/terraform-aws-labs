@@ -13,6 +13,10 @@ provider "aws" {
   region = "eu-central-1"
 }
 
+########################
+# STEP 1 — DATA
+########################
+
 data "aws_vpc" "default" {
   default = true
 }
@@ -35,8 +39,12 @@ data "aws_ami" "al2023" {
   owners = ["amazon"]
 }
 
-resource "aws_security_group" "asg_security_group" {
-  name   = "11-alb-sg"
+########################
+# STEP 2 — SECURITY
+########################
+
+resource "aws_security_group" "alb_sg" {
+  name   = "lab11-alb-sg"
   vpc_id = data.aws_vpc.default.id
 
   ingress {
@@ -54,15 +62,15 @@ resource "aws_security_group" "asg_security_group" {
   }
 }
 
-resource "aws_security_group" "ec2_security_group" {
-  name   = "11-ec2-sg"
+resource "aws_security_group" "ec2_sg" {
+  name   = "lab11-ec2-sg"
   vpc_id = data.aws_vpc.default.id
 
   ingress {
     from_port       = 80
     to_port         = 80
     protocol        = "tcp"
-    security_groups = [aws_security_group.alb_security_group.id]
+    security_groups = [aws_security_group.alb_sg.id]
   }
 
   egress {
@@ -73,41 +81,52 @@ resource "aws_security_group" "ec2_security_group" {
   }
 }
 
+########################
+# STEP 3 — LOAD BALANCER
+########################
+
 resource "aws_lb" "alb" {
-  name               = "11-load-balancer-alb"
+  name               = "lab11-alb"
   load_balancer_type = "application"
   subnets            = data.aws_subnets.default.ids
-  security_groups    = [aws_security_group.alb_security_group.id]
+  security_groups    = [aws_security_group.alb_sg.id]
 
   tags = {
-    Name = "11-load-balancer-alb-alb"
+    Name        = "lab11-alb"
+    Environment = "lab"
+    ManagedBy   = "terraform"
+    Owner       = "Eugen"
   }
 }
 
-resource "aws_lb_target_group" "target_group" {
-  name     = "11-alb-target-group"
+resource "aws_lb_target_group" "web_tg" {
+  name     = "lab11-web-tg"
   port     = 80
   protocol = "HTTP"
   vpc_id   = data.aws_vpc.default.id
 }
 
-resource "aws_lb_listener" "listener" {
+resource "aws_lb_listener" "http" {
   load_balancer_arn = aws_lb.alb.arn
   port              = 80
   protocol          = "HTTP"
 
   default_action {
     type             = "forward"
-    target_group_arn = aws_lb_target_group.target_group.arn
+    target_group_arn = aws_lb_target_group.web_tg.arn
   }
 }
 
-resource "aws_launch_template" "ec2-template" {
-  name_prefix   = "11-alb-asg-"
+########################
+# STEP 4 — LAUNCH TEMPLATE
+########################
+
+resource "aws_launch_template" "ec2_lt" {
+  name_prefix   = "lab11-ec2-"
   image_id      = data.aws_ami.al2023.id
   instance_type = "t2.micro"
 
-  vpc_security_group_ids = [aws_security_group.ec2_security_group.id]
+  vpc_security_group_ids = [aws_security_group.ec2_sg.id]
 
   user_data = base64encode(<<EOF
 #!/bin/bash
@@ -122,13 +141,17 @@ EOF
     resource_type = "instance"
 
     tags = {
-      Name = "11-alb-ec2"
+      Name = "lab11-asg-ec2"
     }
   }
 }
 
+########################
+# STEP 5 — AUTO SCALING
+########################
+
 resource "aws_autoscaling_group" "asg" {
-  name = "11-alb-asg"
+  name = "lab11-asg"
 
   min_size         = 2
   desired_capacity = 2
@@ -137,18 +160,22 @@ resource "aws_autoscaling_group" "asg" {
   vpc_zone_identifier = data.aws_subnets.default.ids
 
   launch_template {
-    id      = aws_launch_template.ec2-template.id
+    id      = aws_launch_template.ec2_lt.id
     version = "$Latest"
   }
 
-  target_group_arns = [aws_lb_target_group.target_group.arn]
+  target_group_arns = [aws_lb_target_group.web_tg.arn]
 
   tag {
     key                 = "Name"
-    value               = "11-alb-instance"
+    value               = "lab11-asg-instance"
     propagate_at_launch = true
   }
 }
+
+########################
+# OUTPUTS
+########################
 
 output "alb_dns_name" {
   value = aws_lb.alb.dns_name

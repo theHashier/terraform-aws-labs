@@ -13,21 +13,32 @@ provider "aws" {
   region = "eu-central-1"
 }
 
-resource "aws_vpc" "vpc" {
+########################
+# STEP 1 — NETWORK
+########################
+
+resource "aws_vpc" "lab06_vpc" {
   cidr_block = "10.0.0.0/16"
 
   tags = {
-    Name = "06-security-groups:vpc"
+    Name        = "lab06-vpc"
+    Environment = "lab"
+    ManagedBy   = "terraform"
+    Owner       = "Eugen"
   }
 }
 
-resource "aws_security_group" "ssh-http-https-sg" {
-  name        = "06-security-groups-ssh-http-https-sg"
+########################
+# STEP 2 — SECURITY
+########################
+
+resource "aws_security_group" "web_ssh_sg" {
+  name        = "lab06-web-ssh-sg"
   description = "Allow SSH HTTP HTTPS"
-  vpc_id      = aws_vpc.vpc.id
+  vpc_id      = aws_vpc.lab06_vpc.id
 
   ingress {
-    description = "SSH"
+    description = "ssh"
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
@@ -35,7 +46,7 @@ resource "aws_security_group" "ssh-http-https-sg" {
   }
 
   ingress {
-    description = "HTTP"
+    description = "http"
     from_port   = 80
     to_port     = 80
     protocol    = "tcp"
@@ -43,7 +54,7 @@ resource "aws_security_group" "ssh-http-https-sg" {
   }
 
   ingress {
-    description = "HTTPS"
+    description = "https"
     from_port   = 443
     to_port     = 443
     protocol    = "tcp"
@@ -58,10 +69,17 @@ resource "aws_security_group" "ssh-http-https-sg" {
   }
 
   tags = {
-    Name = "06-security-groups-ssh-http-https-sg"
+    Name        = "lab06-web-ssh-sg"
+    Environment = "lab"
+    ManagedBy   = "terraform"
+    Owner       = "Eugen"
   }
 }
 
+########################
+# OUTPUTS
+########################
+
 output "security_group_id" {
-  value = aws_security_group.ssh-http-https-sg.id
+  value = aws_security_group.web_ssh_sg.id
 }

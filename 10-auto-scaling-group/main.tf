@@ -13,6 +13,10 @@ provider "aws" {
   region = "eu-central-1"
 }
 
+########################
+# STEP 1 — AMI
+########################
+
 data "aws_ami" "al2023" {
   most_recent = true
 
@@ -24,8 +28,12 @@ data "aws_ami" "al2023" {
   owners = ["amazon"]
 }
 
-resource "aws_launch_template" "ec2-template" {
-  name_prefix   = "10-auto-scaling-"
+########################
+# STEP 2 — LAUNCH TEMPLATE
+########################
+
+resource "aws_launch_template" "ec2_template" {
+  name_prefix   = "lab10-ec2-"
   image_id      = data.aws_ami.al2023.id
   instance_type = "t2.micro"
 
@@ -33,20 +41,27 @@ resource "aws_launch_template" "ec2-template" {
     resource_type = "instance"
 
     tags = {
-      Name = "10-auto-scaling-ec2"
+      Name        = "lab10-asg-ec2"
+      Environment = "lab"
+      ManagedBy   = "terraform"
+      Owner       = "Eugen"
     }
   }
 }
 
+########################
+# STEP 3 — AUTO SCALING
+########################
+
 resource "aws_autoscaling_group" "asg" {
-  name = "10-auto-scaling-group"
+  name = "lab10-asg"
 
   min_size         = 1
   desired_capacity = 1
   max_size         = 2
 
   launch_template {
-    id      = aws_launch_template.ec2-template.id
+    id      = aws_launch_template.ec2_template.id
     version = "$Latest"
   }
 
@@ -54,10 +69,14 @@ resource "aws_autoscaling_group" "asg" {
 
   tag {
     key                 = "Name"
-    value               = "10-auto-scaling-instance"
+    value               = "lab10-asg-instance"
     propagate_at_launch = true
   }
 }
+
+########################
+# OUTPUTS
+########################
 
 output "autoscaling_group_name" {
   value = aws_autoscaling_group.asg.name

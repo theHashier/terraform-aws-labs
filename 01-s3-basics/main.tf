@@ -13,14 +13,25 @@ provider "aws" {
   region = "eu-central-1"
 }
 
-resource "aws_s3_bucket" "s3" {
+########################
+# STEP 1 — STORAGE
+########################
+
+resource "aws_s3_bucket" "lab01_s3" {
   bucket_prefix = "eugen-tf-s3-"
 
   tags = {
-    Name = "01-s3-basic-s3"
+    Name        = "lab01-s3-bucket"
+    Environment = "lab"
+    ManagedBy   = "terraform"
+    Owner       = "Eugen"
   }
 }
 
+########################
+# OUTPUTS
+########################
+
 output "bucket_name" {
-  value = aws_s3_bucket.s3.bucket
+  value = aws_s3_bucket.lab01_s3.bucket
 }

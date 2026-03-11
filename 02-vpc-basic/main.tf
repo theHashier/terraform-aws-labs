@@ -13,58 +13,78 @@ provider "aws" {
   region = "eu-central-1"
 }
 
-resource "aws_vpc" "vpc" {
+########################
+# STEP 1 — NETWORK
+########################
+
+resource "aws_vpc" "lab02_vpc" {
   cidr_block           = "10.0.0.0/16"
   enable_dns_support   = true
   enable_dns_hostnames = true
 
   tags = {
-    Name = "02-vpc-basic-vpc"
+    Name        = "lab02-vpc"
+    Environment = "lab"
+    ManagedBy   = "terraform"
+    Owner       = "Eugen"
   }
 }
 
-resource "aws_internet_gateway" "igw" {
-  vpc_id = aws_vpc.vpc.id
+resource "aws_internet_gateway" "lab02_igw" {
+  vpc_id = aws_vpc.lab02_vpc.id
 
   tags = {
-    Name = "02-vpc-basic-igw"
+    Name        = "lab02-igw"
+    Environment = "lab"
+    ManagedBy   = "terraform"
+    Owner       = "Eugen"
   }
 }
 
-resource "aws_subnet" "public-subnet" {
-  vpc_id                  = aws_vpc.vpc.id
+resource "aws_subnet" "public_subnet_a" {
+  vpc_id                  = aws_vpc.lab02_vpc.id
   cidr_block              = "10.0.1.0/24"
   availability_zone       = "eu-central-1a"
   map_public_ip_on_launch = true
 
   tags = {
-    Name = "02-vpc-basic-public"
+    Name        = "lab02-public-subnet-a"
+    Environment = "lab"
+    ManagedBy   = "terraform"
+    Owner       = "Eugen"
   }
 }
 
-resource "aws_route_table" "public-route-table" {
-  vpc_id = aws_vpc.vpc.id
+resource "aws_route_table" "public_rt" {
+  vpc_id = aws_vpc.lab02_vpc.id
 
   tags = {
-    Name = "02-vpc-basic-public-route-table"
+    Name        = "lab02-public-rt"
+    Environment = "lab"
+    ManagedBy   = "terraform"
+    Owner       = "Eugen"
   }
 }
 
-resource "aws_route" "internet-access" {
-  route_table_id         = aws_route_table.public-route-table.id
+resource "aws_route" "internet_access" {
+  route_table_id         = aws_route_table.public_rt.id
   destination_cidr_block = "0.0.0.0/0"
-  gateway_id             = aws_internet_gateway.igw.id
+  gateway_id             = aws_internet_gateway.lab02_igw.id
 }
 
-resource "aws_route_table_association" "public" {
-  subnet_id      = aws_subnet.public-subnet.id
-  route_table_id = aws_route_table.public-route-table.id
+resource "aws_route_table_association" "public_subnet_a_assoc" {
+  subnet_id      = aws_subnet.public_subnet_a.id
+  route_table_id = aws_route_table.public_rt.id
 }
+
+########################
+# OUTPUTS
+########################
 
 output "vpc_id" {
-  value = aws_vpc.vpc.id
+  value = aws_vpc.lab02_vpc.id
 }
 
 output "public_subnet_id" {
-  value = aws_subnet.public-subnet.id
+  value = aws_subnet.public_subnet_a.id
 }
