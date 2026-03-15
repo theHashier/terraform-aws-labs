@@ -1,42 +1,47 @@
-# Lab 05 - EC2 private instance
+# Lab 05 – EC2 private instance
 
-## What this builds
-- 1 VPC
-- 1 public subnet
-- 1 private subnet
-- 1 EC2 instance inside the private subnet
+## What this lab demonstrates
 
-## Smart words
-- VPC: Virtual Private Cloud. A private network inside AWS.
-- Subnet: A smaller network inside the VPC.
-- Private Subnet: A subnet that has NO route to the internet.
-- Private EC2: An EC2 instance without public IP that only other resources inside the VPC can reach.
+This lab shows how to run an **EC2 instance in a private subnet**: no public IP, no direct internet access. Only resources inside the VPC can reach it. In production you often put databases and backends in private subnets and expose only load balancers or web servers in public subnets.
 
-## Prereqs
+## What this lab creates
+
+- **VPC** (10.0.0.0/16) with DNS support and hostnames enabled
+- **Public subnet** (10.0.1.0/24) with route to the Internet Gateway
+- **Private subnet** (10.0.2.0/24) with no route to the internet
+- **Internet Gateway** and **route table** for the public subnet
+- **EC2 instance** (t2.micro, Amazon Linux 2023) in the private subnet, no public IP
+
+## Prerequisites
+
 - Terraform installed
-- AWS CLI configured (`aws configure`)
-- Region: eu-central-1
+- AWS CLI configured (e.g. `aws configure`)
+- Default region `eu-central-1` (can be overridden with a variable)
 
-## Why this exists
-In real production systems we never expose everything to the internet.
+## Usage
 
-Typical architecture:
+```bash
+terraform init
+terraform plan
+terraform apply
+```
 
-Internet
-   |
-Public EC2 (web server)
-   |
-Private EC2 (database / backend)
+To override the region:
 
-Private resources are protected from direct internet access.
+```bash
+terraform apply -var="region=eu-central-1"
+```
 
-## Cost
-Only one t2.micro instance for free.
+## Outputs
 
-## Run
-- terraform init
-- terraform plan
-- terraform apply or terraform apply -auto-approve(if you are sure) 
+- **private_instance_id** – ID of the private EC2 instance
+
+To access the instance you need a bastion in the public subnet or SSM (Session Manager); this lab does not add those.
 
 ## Cleanup
-- terraform destroy
+
+```bash
+terraform destroy
+```
+
+This removes the VPC, subnets, route table, and EC2 instance.

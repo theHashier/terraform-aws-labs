@@ -10,11 +10,11 @@ terraform {
 }
 
 provider "aws" {
-  region = "eu-central-1"
+  region = var.region
 }
 
 ########################
-# STEP 1 — AMI
+# AMI
 ########################
 
 data "aws_ami" "al2023" {
@@ -29,11 +29,13 @@ data "aws_ami" "al2023" {
 }
 
 ########################
-# STEP 2 — NETWORK
+# VPC
 ########################
 
 resource "aws_vpc" "lab05_vpc" {
-  cidr_block = "10.0.0.0/16"
+  cidr_block           = "10.0.0.0/16"
+  enable_dns_support   = true
+  enable_dns_hostnames = true
 
   tags = {
     Name        = "lab05-vpc"
@@ -46,6 +48,7 @@ resource "aws_vpc" "lab05_vpc" {
 resource "aws_subnet" "public_subnet_a" {
   vpc_id                  = aws_vpc.lab05_vpc.id
   cidr_block              = "10.0.1.0/24"
+  availability_zone       = "${var.region}a"
   map_public_ip_on_launch = true
 
   tags = {
@@ -57,8 +60,9 @@ resource "aws_subnet" "public_subnet_a" {
 }
 
 resource "aws_subnet" "private_subnet_a" {
-  vpc_id     = aws_vpc.lab05_vpc.id
-  cidr_block = "10.0.2.0/24"
+  vpc_id            = aws_vpc.lab05_vpc.id
+  cidr_block        = "10.0.2.0/24"
+  availability_zone = "${var.region}a"
 
   tags = {
     Name        = "lab05-private-subnet-a"
@@ -80,7 +84,7 @@ resource "aws_internet_gateway" "lab05_igw" {
 }
 
 ########################
-# STEP 3 — ROUTING
+# Routing
 ########################
 
 resource "aws_route_table" "public_rt" {
@@ -106,7 +110,7 @@ resource "aws_route_table_association" "public_subnet_assoc" {
 }
 
 ########################
-# STEP 4 — COMPUTE
+# EC2 instance
 ########################
 
 resource "aws_instance" "private_ec2" {
@@ -120,12 +124,4 @@ resource "aws_instance" "private_ec2" {
     ManagedBy   = "terraform"
     Owner       = "Eugen"
   }
-}
-
-########################
-# OUTPUTS
-########################
-
-output "private_instance_id" {
-  value = aws_instance.private_ec2.id
 }

@@ -10,11 +10,11 @@ terraform {
 }
 
 provider "aws" {
-  region = "eu-central-1"
+  region = var.region
 }
 
 ########################
-# STEP 1 — AMI
+# AMI
 ########################
 
 data "aws_ami" "al2023" {
@@ -29,7 +29,7 @@ data "aws_ami" "al2023" {
 }
 
 ########################
-# STEP 2 — IAM (SSM)
+# IAM (SSM)
 ########################
 
 resource "aws_iam_role" "ec2_role" {
@@ -58,7 +58,7 @@ resource "aws_iam_instance_profile" "ec2_profile" {
 }
 
 ########################
-# STEP 3 — COMPUTE
+# EC2 instance
 ########################
 
 resource "aws_instance" "public_ec2" {
@@ -72,12 +72,4 @@ resource "aws_instance" "public_ec2" {
     ManagedBy   = "terraform"
     Owner       = "Eugen"
   }
-}
-
-########################
-# OUTPUTS
-########################
-
-output "instance_id" {
-  value = aws_instance.public_ec2.id
 }

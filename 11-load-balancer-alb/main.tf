@@ -10,11 +10,11 @@ terraform {
 }
 
 provider "aws" {
-  region = "eu-central-1"
+  region = var.region
 }
 
 ########################
-# STEP 1 — DATA
+# Data
 ########################
 
 data "aws_vpc" "default" {
@@ -40,7 +40,7 @@ data "aws_ami" "al2023" {
 }
 
 ########################
-# STEP 2 — SECURITY
+# Security
 ########################
 
 resource "aws_security_group" "alb_sg" {
@@ -82,7 +82,7 @@ resource "aws_security_group" "ec2_sg" {
 }
 
 ########################
-# STEP 3 — LOAD BALANCER
+# ALB
 ########################
 
 resource "aws_lb" "alb" {
@@ -118,7 +118,7 @@ resource "aws_lb_listener" "http" {
 }
 
 ########################
-# STEP 4 — LAUNCH TEMPLATE
+# Launch template
 ########################
 
 resource "aws_launch_template" "ec2_lt" {
@@ -147,7 +147,7 @@ EOF
 }
 
 ########################
-# STEP 5 — AUTO SCALING
+# Auto Scaling Group
 ########################
 
 resource "aws_autoscaling_group" "asg" {
@@ -171,12 +171,4 @@ resource "aws_autoscaling_group" "asg" {
     value               = "lab11-asg-instance"
     propagate_at_launch = true
   }
-}
-
-########################
-# OUTPUTS
-########################
-
-output "alb_dns_name" {
-  value = aws_lb.alb.dns_name
 }

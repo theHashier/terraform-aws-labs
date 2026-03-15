@@ -1,28 +1,46 @@
-# Lab 02 - VPC basic
+# Lab 02 – VPC basic
 
-## What this builds
-- 1 VPC
-- 1 public subnet
-- 1 Internet Gateway
-- 1 route table + default route to the IGW
-- route table association to the public subnet
+## What this lab demonstrates
 
-## “Smart words”
-- VPC: your private network in AWS
-- CIDR: IP range for the network (example: 10.0.0.0/16)
-- Subnet: smaller network inside the VPC (example: 10.0.1.0/24)
-- IGW (Internet Gateway): lets the VPC reach the internet
-- Route table: rules for where traffic goes (0.0.0.0/0 = “any internet address”)
+This lab shows how to create a **basic VPC** with Terraform: a private network in AWS with one public subnet and an Internet Gateway so resources in that subnet can reach the internet. You get familiar with VPC, CIDR, subnets, route tables, and the IGW.
 
-## Prereqs
+## What this lab creates
+
+- **VPC** (10.0.0.0/16) with DNS support and hostnames enabled
+- **Internet Gateway** attached to the VPC
+- **Public subnet** (10.0.1.0/24) in the first AZ, with public IP on launch
+- **Route table** with a default route (0.0.0.0/0) to the IGW
+- **Route table association** linking the public subnet to that route table
+
+## Prerequisites
+
 - Terraform installed
-- AWS CLI configured (`aws configure`)
-- Region: eu-central-1 or you region.
+- AWS CLI configured (e.g. `aws configure`)
+- Default region `eu-central-1` (can be overridden with a variable)
 
-## Run
-- terraform init
-- terraform plan
-- terraform apply or terraform apply -auto-approve(if you are sure) 
+## Usage
+
+```bash
+terraform init
+terraform plan
+terraform apply
+```
+
+To override the region:
+
+```bash
+terraform apply -var="region=eu-central-1"
+```
+
+## Outputs
+
+- **vpc_id** – ID of the VPC
+- **public_subnet_id** – ID of the public subnet
 
 ## Cleanup
-- terraform destroy
+
+```bash
+terraform destroy
+```
+
+This removes the VPC, subnet, route table, and Internet Gateway.

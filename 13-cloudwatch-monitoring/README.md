@@ -18,6 +18,7 @@ This lab shows how to **monitor EC2 CPU usage with CloudWatch alarms**. Terrafor
 
 - Terraform installed
 - AWS CLI configured (e.g. `aws configure`)
+- Default region `eu-central-1` (can be overridden with a variable)
 
 ## Usage
 
@@ -27,12 +28,16 @@ terraform plan
 terraform apply
 ```
 
-Region is `eu-central-1` by default; override with `-var="region=eu-central-1"` if needed.
+To override the region:
+
+```bash
+terraform apply -var="region=eu-central-1"
+```
 
 ## Outputs
 
-- **instance_id** – EC2 instance ID
-- **instance_public_ip** – Public IP of the instance
+- **instance_id** – ID of the EC2 instance
+- **instance_public_ip** – Public IP of the EC2 instance
 - **cloudwatch_alarm_name** – Name of the CloudWatch CPU alarm
 
 You can watch the alarm in the AWS Console under CloudWatch → Alarms. To generate load and test the alarm, use another lab or connect via SSM if you add it later.
@@ -43,4 +48,4 @@ You can watch the alarm in the AWS Console under CloudWatch → Alarms. To gener
 terraform destroy
 ```
 
-Removes the VPC, instance, and alarm.
+This removes the VPC, instance, and alarm.

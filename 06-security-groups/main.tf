@@ -10,15 +10,17 @@ terraform {
 }
 
 provider "aws" {
-  region = "eu-central-1"
+  region = var.region
 }
 
 ########################
-# STEP 1 — NETWORK
+# VPC
 ########################
 
 resource "aws_vpc" "lab06_vpc" {
-  cidr_block = "10.0.0.0/16"
+  cidr_block           = "10.0.0.0/16"
+  enable_dns_support   = true
+  enable_dns_hostnames = true
 
   tags = {
     Name        = "lab06-vpc"
@@ -29,7 +31,7 @@ resource "aws_vpc" "lab06_vpc" {
 }
 
 ########################
-# STEP 2 — SECURITY
+# Security group
 ########################
 
 resource "aws_security_group" "web_ssh_sg" {
@@ -74,12 +76,4 @@ resource "aws_security_group" "web_ssh_sg" {
     ManagedBy   = "terraform"
     Owner       = "Eugen"
   }
-}
-
-########################
-# OUTPUTS
-########################
-
-output "security_group_id" {
-  value = aws_security_group.web_ssh_sg.id
 }

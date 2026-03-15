@@ -1,40 +1,47 @@
-# Lab 11 - Application Load Balancer (ALB)
+# Lab 11 – Application Load Balancer (ALB)
 
-## What this builds
-- Application Load Balancer
-- Target Group
-- Listener (HTTP :80)
-- Load balancing across EC2 instances
+## What this lab demonstrates
 
-## Smart words
-- Application Load Balancer (ALB): AWS service that distributes HTTP/HTTPS traffic across multiple targets.
-- Target Group: A group of resources (EC2 instances) that receive traffic from the load balancer.
-- Listener: A rule that checks for incoming traffic on a specific port and forwards it to a target group.
+This lab shows how to put an **Application Load Balancer (ALB)** in front of EC2 instances: a target group, HTTP listener on port 80, and an Auto Scaling Group that runs two instances with Apache. Traffic to the ALB is distributed across the instances. Uses the default VPC.
 
-## Cost
-Application Load Balancer costs around $0.02 per hour.
-Safe for short lab testing.
+## What this lab creates
 
-## Prereqs
+- **Security groups**: one for the ALB (HTTP 80 from 0.0.0.0/0), one for EC2 (HTTP 80 from the ALB only)
+- **ALB** with a **target group** and **listener** (HTTP :80 → target group)
+- **Launch template** (Amazon Linux 2023, t2.micro, Apache, “Hello from &lt;hostname&gt;” page)
+- **Auto Scaling Group** (min 2, desired 2, max 3) registered with the target group
+
+## Prerequisites
+
 - Terraform installed
-- AWS CLI configured (`aws configure`)
-- Region: eu-central-1
+- AWS CLI configured (e.g. `aws configure`)
+- Default region `eu-central-1` (can be overridden with a variable)
+- Default VPC and subnets in the region
 
-## Run
-- terraform init
-- terraform plan
-- terraform apply or terraform apply -auto-approve (if you are sure)
+## Usage
 
-## Test
-After apply, Terraform will output the ALB DNS name.
+```bash
+terraform init
+terraform plan
+terraform apply
+```
 
-Open the DNS name in a browser:
+To override the region:
 
-http://alb dns comes here
+```bash
+terraform apply -var="region=eu-central-1"
+```
 
-Traffic will be routed to 2 EC2 instances.
-Make sure to check the ip adress changes when you reload the page many times, this means the ALB works fine.
-It is the text you can read on page load like Hello from ... ip
+## Outputs
+
+- **alb_dns_name** – DNS name of the ALB
+
+Open `http://<alb_dns_name>` in a browser. Reload a few times; the “Hello from …” hostname or IP may change as the ALB switches between the two instances.
 
 ## Cleanup
-- terraform destroy
+
+```bash
+terraform destroy
+```
+
+This removes the ALB, target group, listener, ASG, launch template, and security groups. The ALB incurs about $0.02/hour while it exists.

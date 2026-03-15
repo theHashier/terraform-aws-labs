@@ -14,7 +14,7 @@ provider "aws" {
 }
 
 ########################
-# Network (minimal)
+# VPC
 ########################
 
 resource "aws_vpc" "main" {
@@ -65,7 +65,7 @@ resource "aws_route_table_association" "main" {
 }
 
 ########################
-# Security (no inbound)
+# Security
 ########################
 
 resource "aws_security_group" "ec2" {
@@ -87,7 +87,7 @@ resource "aws_security_group" "ec2" {
 }
 
 ########################
-# EC2 instance
+# AMI
 ########################
 
 data "aws_ami" "amazon_linux_2" {
@@ -99,6 +99,10 @@ data "aws_ami" "amazon_linux_2" {
     values = ["amzn2-ami-hvm-*-x86_64-gp2"]
   }
 }
+
+########################
+# EC2 instance
+########################
 
 resource "aws_instance" "main" {
   ami           = data.aws_ami.amazon_linux_2.id
@@ -113,7 +117,7 @@ resource "aws_instance" "main" {
 }
 
 ########################
-# CloudWatch CPU alarm
+# CloudWatch alarm
 ########################
 
 resource "aws_cloudwatch_metric_alarm" "cpu_high" {

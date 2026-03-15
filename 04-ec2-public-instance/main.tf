@@ -10,24 +10,11 @@ terraform {
 }
 
 provider "aws" {
-  region = "eu-central-1"
+  region = var.region
 }
 
 ########################
-# VARIABLES
-########################
-
-variable "key_name" {
-  type = string
-}
-
-variable "ssh_cidr" {
-  type    = string
-  default = "0.0.0.0/0"
-}
-
-########################
-# STEP 1 — NETWORK
+# VPC
 ########################
 
 resource "aws_vpc" "lab04_vpc" {
@@ -58,7 +45,7 @@ resource "aws_subnet" "public_subnet_a" {
   vpc_id                  = aws_vpc.lab04_vpc.id
   cidr_block              = "10.40.1.0/24"
   map_public_ip_on_launch = true
-  availability_zone       = "eu-central-1a"
+  availability_zone       = "${var.region}a"
 
   tags = {
     Name        = "lab04-public-subnet-a"
@@ -90,7 +77,7 @@ resource "aws_route_table_association" "public_subnet_assoc" {
 }
 
 ########################
-# STEP 2 — SECURITY
+# Security
 ########################
 
 resource "aws_security_group" "ssh_sg" {
@@ -121,7 +108,7 @@ resource "aws_security_group" "ssh_sg" {
 }
 
 ########################
-# STEP 3 — AMI
+# AMI
 ########################
 
 data "aws_ami" "al2023" {
@@ -145,7 +132,7 @@ data "aws_ami" "al2023" {
 }
 
 ########################
-# STEP 4 — COMPUTE
+# EC2 instance
 ########################
 
 resource "aws_instance" "public_ec2" {
@@ -161,20 +148,4 @@ resource "aws_instance" "public_ec2" {
     ManagedBy   = "terraform"
     Owner       = "Eugen"
   }
-}
-
-########################
-# OUTPUTS
-########################
-
-output "instance_id" {
-  value = aws_instance.public_ec2.id
-}
-
-output "public_ip" {
-  value = aws_instance.public_ec2.public_ip
-}
-
-output "public_dns" {
-  value = aws_instance.public_ec2.public_dns
 }

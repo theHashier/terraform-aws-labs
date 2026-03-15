@@ -1,159 +1,78 @@
-# Lab 09 - EBS Volumes
+# Lab 09 – EBS volumes
 
-## What this builds
-- EC2 instance
-- EBS volume
-- Volume attachment to EC2
+## What this lab demonstrates
 
-## Smart words
-- EBS (Elastic Block Store): Disk storage used by EC2 instances.
-- Block storage: Storage that behaves like a hard drive attached to a computer.
-- Volume attachment: Process of connecting an EBS disk to an EC2 instance.
+This lab shows how to create an **EBS volume** and **attach it to an EC2 instance** with Terraform. The instance has SSM so you can connect without SSH. You then format and mount the disk, create a snapshot, and use the `disaster-recovery-test` subfolder to recover from that snapshot.
 
-## Cost
-- t2.micro EC2 instance
-- small gp3 EBS volume
+## What this lab creates
 
-Only a few cents or free if left running.
+- **IAM role** with `AmazonSSMManagedInstanceCore` and **instance profile**
+- **EC2 instance** (t2.micro, Amazon Linux 2023) in the default VPC
+- **EBS volume** (8 GiB, gp3) in the same AZ as the instance
+- **Volume attachment** at `/dev/xvdf`
 
-## Prereqs
+## Prerequisites
+
 - Terraform installed
-- AWS CLI configured (`aws configure`)
-- Region: eu-central-1
+- AWS CLI configured (e.g. `aws configure`)
+- Default region `eu-central-1` (can be overridden with a variable)
 
-## Run
-- terraform init
-- terraform plan
-- terraform apply or terraform apply -auto-approve (if you are sure)
+## Usage
 
-## After Apply (Prepare the Disk)
-Connect to the instance using **SSM Session Manager**.
+```bash
+terraform init
+terraform plan
+terraform apply
+```
 
-Check the disks:
+To override the region:
 
-- lsblk
+```bash
+terraform apply -var="region=eu-central-1"
+```
 
-You should see something similar to:
+## Outputs
 
-- xvda  → root disk (OS)  
-- xvdf  → new EBS disk
+- **instance_id** – ID of the EC2 instance (connect via SSM Session Manager)
+- **volume_id** – ID of the EBS volume
 
-Format the disk:
+## After apply – prepare the disk
 
-- sudo mkfs -t xfs /dev/xvdf
+Connect via **EC2 → Connect → Session Manager**, then:
 
-Create mount point:
+```bash
+lsblk                    # see xvda (root) and xvdf (new volume)
+sudo mkfs -t xfs /dev/xvdf
+sudo mkdir /data
+sudo mount /dev/xvdf /data
+df -h
+echo "EBS disaster recovery test" | sudo tee /data/test.txt
+ls /data && cat /data/test.txt
+```
 
-- sudo mkdir /data
+## Create snapshot (for disaster recovery)
 
-Mount the disk:
+In the AWS Console: **EC2 → Volumes** → select the extra disk → **Create snapshot**.
 
-- sudo mount /dev/xvdf /data
+Add this tag so the disaster-recovery Terraform can find it:
 
-Verify mount:
-
-- df -h
-
-Create test file:
-
-- echo "EBS disaster recovery test" | sudo tee /data/test.txt
-
-Check if file exists:
-
-- ls /data
-
-Read the file:
-
-- cat /data/test.txt
-
-## Create Snapshot
-Go to:
-
-AWS Console  
-EC2 → Volumes
-
-Select the extra disk and create a snapshot.
-
-Important: the snapshot must contain the following tag:
-
-- Key: lab09  
-- Value: disasterandrecovery
-
-This tag is required because the disaster recovery Terraform code searches the snapshot using this tag.
+- **Key:** `lab09`
+- **Value:** `disasterandrecovery`
 
 ## Cleanup
-- terraform destroy (here the infrastructure will be destroyed completelly but the snapshot will be saved so we can use it with the Disaster Recovery Scenario)
 
-## Disaster Recovery Scenario
-Inside this lab there is a child folder:
+```bash
+terraform destroy
+```
 
-disaster-recovery-test
+This removes the instance and volume. Snapshots you created are kept.
 
-This folder contains Terraform code that simulates a recovery scenario.
+## Disaster recovery scenario
 
-Steps:
+The subfolder **`disaster-recovery-test/`** contains Terraform that:
 
-Go into the disaster recovery folder and run Terraform again:
+- Finds the snapshot by tag `lab09 = disasterandrecovery`
+- Creates a new EC2 instance and EBS volume from that snapshot
+- Attaches the volume to the new instance
 
-cd disaster-recovery-test
-
-- terraform init  
-- terraform plan  
-- terraform apply or terraform apply -auto-approve (if you are sure)
-
-Terraform will:
-
-- find the snapshot using the tag
-- create a new EC2 instance
-- create a new EBS volume from the snapshot
-- attach the disk to the new instance
-
-## After Apply (Prepare the Disk)
-Connect to the instance using **SSM Session Manager**.
-
-Check the disks:
-
-- lsblk
-
-You should see something similar to:
-
-- xvda  → root disk (OS)  
-- xvdf  → new EBS disk
-
-Format the disk:
-
-- sudo mkfs -t xfs /dev/xvdf
-
-Create mount point:
-
-- sudo mkdir /data
-
-Mount the disk:
-
-- sudo mount /dev/xvdf /data
-
-Verify mount:
-
-- df -h
-
-Check if file exists:
-
-- ls /data
-
-Read the file:
-
-- cat /data/test.txt
-
-You get what you saved into the file:
-
-- "EBS disaster recovery test"
-
-This means it worked, you recovered the lost data with the help of that snapshot.
-
-## Important Tag Requirement
-Both Terraform configurations depend on the same tag:
-
-- Key: lab09  
-- Value: disasterandrecovery
-
-If the snapshot does not contain this tag, the recovery Terraform will not find it.
+After running it, connect via SSM, mount `/dev/xvdf` at `/data`, and confirm `cat /data/test.txt` shows `EBS disaster recovery test`. Both this lab and the disaster-recovery code rely on the same tag: **Key `lab09`, Value `disasterandrecovery`**.

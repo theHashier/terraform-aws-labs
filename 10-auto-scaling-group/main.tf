@@ -10,11 +10,11 @@ terraform {
 }
 
 provider "aws" {
-  region = "eu-central-1"
+  region = var.region
 }
 
 ########################
-# STEP 1 — AMI
+# AMI
 ########################
 
 data "aws_ami" "al2023" {
@@ -29,7 +29,7 @@ data "aws_ami" "al2023" {
 }
 
 ########################
-# STEP 2 — LAUNCH TEMPLATE
+# Launch template
 ########################
 
 resource "aws_launch_template" "ec2_template" {
@@ -50,7 +50,7 @@ resource "aws_launch_template" "ec2_template" {
 }
 
 ########################
-# STEP 3 — AUTO SCALING
+# Auto Scaling Group
 ########################
 
 resource "aws_autoscaling_group" "asg" {
@@ -65,19 +65,11 @@ resource "aws_autoscaling_group" "asg" {
     version = "$Latest"
   }
 
-  availability_zones = ["eu-central-1a", "eu-central-1b"]
+  availability_zones = ["${var.region}a", "${var.region}b"]
 
   tag {
     key                 = "Name"
     value               = "lab10-asg-instance"
     propagate_at_launch = true
   }
-}
-
-########################
-# OUTPUTS
-########################
-
-output "autoscaling_group_name" {
-  value = aws_autoscaling_group.asg.name
 }

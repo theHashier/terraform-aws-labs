@@ -10,11 +10,11 @@ terraform {
 }
 
 provider "aws" {
-  region = "eu-central-1"
+  region = var.region
 }
 
 ########################
-# STEP 1 — NETWORK
+# VPC
 ########################
 
 resource "aws_vpc" "lab02_vpc" {
@@ -44,7 +44,7 @@ resource "aws_internet_gateway" "lab02_igw" {
 resource "aws_subnet" "public_subnet_a" {
   vpc_id                  = aws_vpc.lab02_vpc.id
   cidr_block              = "10.0.1.0/24"
-  availability_zone       = "eu-central-1a"
+  availability_zone       = "${var.region}a"
   map_public_ip_on_launch = true
 
   tags = {
@@ -75,16 +75,4 @@ resource "aws_route" "internet_access" {
 resource "aws_route_table_association" "public_subnet_a_assoc" {
   subnet_id      = aws_subnet.public_subnet_a.id
   route_table_id = aws_route_table.public_rt.id
-}
-
-########################
-# OUTPUTS
-########################
-
-output "vpc_id" {
-  value = aws_vpc.lab02_vpc.id
-}
-
-output "public_subnet_id" {
-  value = aws_subnet.public_subnet_a.id
 }

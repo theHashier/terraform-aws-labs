@@ -32,7 +32,7 @@ terraform apply -var="region=eu-central-1"
 
 ## Outputs
 
-- **bucket_name** – Name of the S3 bucket that was created
+- **bucket_name** – Name of the S3 bucket
 
 You can find the bucket in the AWS Console under S3 using the output value.
 

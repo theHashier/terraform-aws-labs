@@ -10,11 +10,11 @@ terraform {
 }
 
 provider "aws" {
-  region = "eu-central-1"
+  region = var.region
 }
 
 ########################
-# STEP 1 — NETWORK
+# VPC
 ########################
 
 resource "aws_vpc" "lab12_vpc" {
@@ -33,7 +33,7 @@ resource "aws_vpc" "lab12_vpc" {
 resource "aws_subnet" "public_subnet_a" {
   vpc_id                  = aws_vpc.lab12_vpc.id
   cidr_block              = "10.12.1.0/24"
-  availability_zone       = "eu-central-1a"
+  availability_zone       = "${var.region}a"
   map_public_ip_on_launch = true
 
   tags = {
@@ -44,7 +44,7 @@ resource "aws_subnet" "public_subnet_a" {
 resource "aws_subnet" "public_subnet_b" {
   vpc_id                  = aws_vpc.lab12_vpc.id
   cidr_block              = "10.12.2.0/24"
-  availability_zone       = "eu-central-1b"
+  availability_zone       = "${var.region}b"
   map_public_ip_on_launch = true
 
   tags = {
@@ -84,7 +84,7 @@ resource "aws_route_table_association" "public_b_assoc" {
 }
 
 ########################
-# STEP 2 — SECURITY
+# Security
 ########################
 
 resource "aws_security_group" "alb_sg" {
@@ -126,7 +126,7 @@ resource "aws_security_group" "ec2_sg" {
 }
 
 ########################
-# STEP 3 — IAM
+# IAM
 ########################
 
 resource "aws_iam_role" "ec2_role" {
@@ -155,7 +155,7 @@ resource "aws_iam_instance_profile" "ec2_profile" {
 }
 
 ########################
-# STEP 4 — AMI
+# AMI
 ########################
 
 data "aws_ami" "al2023" {
@@ -170,7 +170,7 @@ data "aws_ami" "al2023" {
 }
 
 ########################
-# STEP 5 — EC2
+# EC2 instance
 ########################
 
 resource "aws_instance" "public_ec2" {
@@ -240,12 +240,4 @@ resource "aws_lb_listener" "http" {
     type             = "forward"
     target_group_arn = aws_lb_target_group.web_tg.arn
   }
-}
-
-########################
-# OUTPUT
-########################
-
-output "alb_dns" {
-  value = aws_lb.alb.dns_name
 }

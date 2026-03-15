@@ -1,28 +1,46 @@
-# Lab 06 - Security Groups
+# Lab 06 – Security groups
 
-## What this builds
-- VPC
-- Security Group with SSH, HTTP, and HTTPS access
+## What this lab demonstrates
 
-## Smart words
-- Security Group: A virtual firewall attached to AWS resources. It controls which traffic is allowed in or out.
-- Firewall: A system that filters network traffic. It decides which connections are allowed.
-- Port: A numbered network door used by services. Examples: 22 → SSH (remote login to Linux), 80 → HTTP (web traffic), 443 → HTTPS (secure web traffic)
-- SSH: Secure Shell. A protocol used to remotely log into Linux servers.
-- Stateful: Security Groups are stateful. If traffic is allowed IN, the response is automatically allowed OUT.
+This lab shows how to create a **security group** in Terraform: a virtual firewall that allows SSH (22), HTTP (80), and HTTPS (443) from the internet. Security groups are stateful (if traffic is allowed in, the response is allowed out) and are attached to resources like EC2 or load balancers.
 
-## Cost
-No running compute resources. Cost is effectively $0.
+## What this lab creates
 
-## Prereqs
+- **VPC** (10.0.0.0/16) with DNS support and hostnames enabled
+- **Security group** with:
+  - Ingress: SSH (22), HTTP (80), HTTPS (443) from 0.0.0.0/0
+  - Egress: all traffic to 0.0.0.0/0
+
+No EC2 or other compute is created; you can use the security group ID in other labs.
+
+## Prerequisites
+
 - Terraform installed
-- AWS CLI configured (`aws configure`)
-- Region: eu-central-1
+- AWS CLI configured (e.g. `aws configure`)
+- Default region `eu-central-1` (can be overridden with a variable)
 
-## Run
-- terraform init  
-- terraform plan  
-- terraform apply or terraform apply -auto-approve (if you are sure)
+## Usage
+
+```bash
+terraform init
+terraform plan
+terraform apply
+```
+
+To override the region:
+
+```bash
+terraform apply -var="region=eu-central-1"
+```
+
+## Outputs
+
+- **security_group_id** – ID of the security group (use when launching EC2 or other resources in this VPC)
 
 ## Cleanup
-- terraform destroy
+
+```bash
+terraform destroy
+```
+
+This removes the VPC and security group. No running compute, so cost is effectively zero.

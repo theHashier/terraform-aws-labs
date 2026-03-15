@@ -10,11 +10,11 @@ terraform {
 }
 
 provider "aws" {
-  region = "eu-central-1"
+  region = var.region
 }
 
 ########################
-# STEP 1 — AMI
+# AMI
 ########################
 
 data "aws_ami" "al2023" {
@@ -29,7 +29,7 @@ data "aws_ami" "al2023" {
 }
 
 ########################
-# STEP 2 — IAM
+# IAM (SSM)
 ########################
 
 resource "aws_iam_role" "ec2_role" {
@@ -58,7 +58,7 @@ resource "aws_iam_instance_profile" "ec2_profile" {
 }
 
 ########################
-# STEP 3 — COMPUTE
+# EC2 instance
 ########################
 
 resource "aws_instance" "public_ec2" {
@@ -75,7 +75,7 @@ resource "aws_instance" "public_ec2" {
 }
 
 ########################
-# STEP 4 — STORAGE
+# EBS volume
 ########################
 
 resource "aws_ebs_volume" "data_volume" {
@@ -95,16 +95,4 @@ resource "aws_volume_attachment" "data_attach" {
   device_name = "/dev/xvdf"
   volume_id   = aws_ebs_volume.data_volume.id
   instance_id = aws_instance.public_ec2.id
-}
-
-########################
-# OUTPUTS
-########################
-
-output "instance_id" {
-  value = aws_instance.public_ec2.id
-}
-
-output "volume_id" {
-  value = aws_ebs_volume.data_volume.id
 }
