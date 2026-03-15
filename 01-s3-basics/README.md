@@ -1,21 +1,45 @@
-# Lab 01 - S3 basics
+# Lab 01 – S3 basics
 
-## What this builds
-- 1 S3 bucket (cheap storage)
+## What this lab demonstrates
 
-## “Smart words”
-- S3: AWS storage service for files/objects (images, backups, logs, etc.)
-- Bucket: the top-level container in S3 (like a folder, but S3 calls it a bucket)
+This lab shows how to create a **simple S3 bucket** with Terraform. S3 is AWS’s object storage service used for images, backups, logs, and many other types of files. The bucket is named using a prefix and a random suffix so it stays unique across AWS accounts and regions.
 
-## Prereqs
+## What this lab creates
+
+- **S3 bucket** with:
+  - `bucket_prefix = "tf-s3-"` (unique bucket name per run)
+  - Tags: `Name`, `Environment`, `ManagedBy`, `Owner`
+
+## Prerequisites
+
 - Terraform installed
-- AWS CLI configured (`aws configure`)
-- Region: eu-central-1 or you region.
+- AWS CLI configured (e.g. `aws configure`)
+- Default region `eu-central-1` (can be overridden with a variable)
 
-## Run
-- terraform init
-- terraform plan
-- terraform apply or terraform apply -auto-approve(if you are sure) 
+## Usage
+
+```bash
+terraform init
+terraform plan
+terraform apply
+```
+
+To override the region:
+
+```bash
+terraform apply -var="region=eu-central-1"
+```
+
+## Outputs
+
+- **bucket_name** – Name of the S3 bucket that was created
+
+You can find the bucket in the AWS Console under S3 using the output value.
 
 ## Cleanup
-- terraform destroy
+
+```bash
+terraform destroy
+```
+
+This removes the S3 bucket so you don’t pay for unused storage.
