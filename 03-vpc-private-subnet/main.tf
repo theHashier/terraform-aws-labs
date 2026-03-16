@@ -61,7 +61,6 @@ resource "aws_subnet" "public" {
     Name        = "lab03-public-subnet-a"
     Environment = "lab"
     ManagedBy   = "terraform"
-    Owner       = "Eugen"
   }
 }
 
@@ -75,7 +74,6 @@ resource "aws_subnet" "private" {
     Name        = "lab03-private-subnet-a"
     Environment = "lab"
     ManagedBy   = "terraform"
-    Owner       = "Eugen"
   }
 }
 
@@ -90,7 +88,6 @@ resource "aws_route_table" "public_rt" {
     Name        = "lab03-public-rt"
     Environment = "lab"
     ManagedBy   = "terraform"
-    Owner       = "Eugen"
   }
 }
 
@@ -112,7 +109,6 @@ resource "aws_route_table" "private_rt" {
     Name        = "lab03-private-rt"
     Environment = "lab"
     ManagedBy   = "terraform"
-    Owner       = "Eugen"
   }
 }
 
@@ -121,20 +117,3 @@ resource "aws_route_table_association" "private_subnet_assoc" {
   route_table_id = aws_route_table.private_rt.id
 }
 
-########################
-# VPC endpoint
-########################
-
-resource "aws_vpc_endpoint" "s3_endpoint" {
-  vpc_id            = aws_vpc.main.id
-  service_name      = "com.amazonaws.${var.region}.s3"
-  vpc_endpoint_type = "Gateway"
-  route_table_ids   = [aws_route_table.private_rt.id]
-
-  tags = {
-    Name        = "lab03-s3-endpoint"
-    Environment = "lab"
-    ManagedBy   = "terraform"
-    Owner       = "Eugen"
-  }
-}

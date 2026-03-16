@@ -1,8 +1,8 @@
-# Lab 03 – VPC with private subnet (no NAT)
+# Lab 03 – VPC with public and private subnet (no NAT)
 
 ## What this lab demonstrates
 
-This lab shows how to create a **VPC with both a public and a private subnet** using a layout that is closer to production practice. The public subnet has a route to the Internet Gateway; the private subnet has no internet route. To let the private subnet reach S3 without going over the internet, you add an S3 Gateway VPC Endpoint. There is no NAT Gateway, so you avoid its hourly cost.
+This lab shows how to create a **VPC with both a public and a private subnet** using a layout that is closer to production practice. The public subnet has a route to the Internet Gateway; the private subnet has no internet route. There is no NAT Gateway, so you avoid its hourly cost and anything in the private subnet **cannot reach the internet or S3 yet**.
 
 ## What this lab creates
 
@@ -16,7 +16,8 @@ This lab shows how to create a **VPC with both a public and a private subnet** u
   - CIDR `private_subnet_cidr` (default `10.3.2.0/24`) in the same AZ, no public IP, no route to the internet.
 - **Public route table** with default route (0.0.0.0/0) to the IGW, associated to the public subnet
 - **Private route table** with no internet route, associated to the private subnet
-- **S3 Gateway VPC Endpoint** so the private subnet can reach S3 without NAT or internet
+
+Later labs can extend this pattern by adding **NAT Gateways** or **VPC endpoints**; this lab is only about understanding the basic public/private subnet split.
 
 ## Prerequisites
 
@@ -49,14 +50,13 @@ terraform apply \
 - **private_subnet_id** – ID of the private subnet
 - **public_route_table_id** – ID of the public route table
 - **private_route_table_id** – ID of the private route table
-- **s3_vpc_endpoint_id** – ID of the S3 VPC endpoint
 - **vpc_cidr** – CIDR block of the VPC
 - **public_subnet_cidr** – CIDR block of the public subnet
 - **private_subnet_cidr** – CIDR block of the private subnet
 
 ## Cost note
 
-There is no NAT Gateway (no hourly charges). The S3 Gateway endpoint is free; you pay only for S3 usage.
+There is no NAT Gateway (no hourly charges). You pay only for the underlying VPC networking components.
 
 ## Cleanup
 
@@ -64,4 +64,5 @@ There is no NAT Gateway (no hourly charges). The S3 Gateway endpoint is free; yo
 terraform destroy
 ```
 
-This removes the VPC, subnets, route tables, and S3 VPC endpoint.
+This removes the VPC, subnets, and route tables.
+
