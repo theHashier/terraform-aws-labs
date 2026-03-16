@@ -17,16 +17,15 @@ provider "aws" {
 # VPC
 ########################
 
-resource "aws_vpc" "lab06_vpc" {
-  cidr_block           = "10.0.0.0/16"
+resource "aws_vpc" "main" {
+  cidr_block           = var.vpc_cidr
   enable_dns_support   = true
   enable_dns_hostnames = true
 
   tags = {
-    Name        = "lab06-vpc"
+    Name        = "lab06-security-groups-vpc"
     Environment = "lab"
     ManagedBy   = "terraform"
-    Owner       = "Eugen"
   }
 }
 
@@ -34,17 +33,17 @@ resource "aws_vpc" "lab06_vpc" {
 # Security group
 ########################
 
-resource "aws_security_group" "web_ssh_sg" {
+resource "aws_security_group" "web_ssh" {
   name        = "lab06-web-ssh-sg"
   description = "Allow SSH HTTP HTTPS"
-  vpc_id      = aws_vpc.lab06_vpc.id
+  vpc_id      = aws_vpc.main.id
 
   ingress {
     description = "ssh"
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = [var.allowed_cidr]
   }
 
   ingress {
@@ -52,7 +51,7 @@ resource "aws_security_group" "web_ssh_sg" {
     from_port   = 80
     to_port     = 80
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = [var.allowed_cidr]
   }
 
   ingress {
@@ -60,7 +59,7 @@ resource "aws_security_group" "web_ssh_sg" {
     from_port   = 443
     to_port     = 443
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = [var.allowed_cidr]
   }
 
   egress {
@@ -74,6 +73,5 @@ resource "aws_security_group" "web_ssh_sg" {
     Name        = "lab06-web-ssh-sg"
     Environment = "lab"
     ManagedBy   = "terraform"
-    Owner       = "Eugen"
   }
 }
