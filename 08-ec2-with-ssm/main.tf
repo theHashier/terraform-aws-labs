@@ -19,20 +19,19 @@ provider "aws" {
 
 data "aws_ami" "al2023" {
   most_recent = true
+  owners      = ["amazon"]
 
   filter {
     name   = "name"
     values = ["al2023-ami-*-x86_64"]
   }
-
-  owners = ["amazon"]
 }
 
 ########################
 # IAM (SSM)
 ########################
 
-resource "aws_iam_role" "ec2_role" {
+resource "aws_iam_role" "main" {
   name = "lab08-ec2-role"
 
   assume_role_policy = jsonencode({
@@ -47,24 +46,24 @@ resource "aws_iam_role" "ec2_role" {
   })
 }
 
-resource "aws_iam_role_policy_attachment" "ssm_attach" {
-  role       = aws_iam_role.ec2_role.name
+resource "aws_iam_role_policy_attachment" "ssm_attachment" {
+  role       = aws_iam_role.main.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
 }
 
-resource "aws_iam_instance_profile" "ec2_profile" {
+resource "aws_iam_instance_profile" "main" {
   name = "lab08-ec2-profile"
-  role = aws_iam_role.ec2_role.name
+  role = aws_iam_role.main.name
 }
 
 ########################
 # EC2 instance
 ########################
 
-resource "aws_instance" "public_ec2" {
+resource "aws_instance" "main" {
   ami                  = data.aws_ami.al2023.id
   instance_type        = "t2.micro"
-  iam_instance_profile = aws_iam_instance_profile.ec2_profile.name
+  iam_instance_profile = aws_iam_instance_profile.main.name
 
   tags = {
     Name        = "lab08-public-ec2"

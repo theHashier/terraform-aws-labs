@@ -32,7 +32,7 @@ data "aws_ami" "al2023" {
 # IAM
 ########################
 
-resource "aws_iam_role" "ec2_role" {
+resource "aws_iam_role" "main" {
   name = "lab07-ec2-role"
 
   assume_role_policy = jsonencode({
@@ -47,7 +47,7 @@ resource "aws_iam_role" "ec2_role" {
   })
 }
 
-resource "aws_iam_policy" "s3_list_policy" {
+resource "aws_iam_policy" "s3_list" {
   name = "lab07-s3-list-policy"
 
   policy = jsonencode({
@@ -62,24 +62,24 @@ resource "aws_iam_policy" "s3_list_policy" {
   })
 }
 
-resource "aws_iam_role_policy_attachment" "s3_attach" {
-  role       = aws_iam_role.ec2_role.name
-  policy_arn = aws_iam_policy.s3_list_policy.arn
+resource "aws_iam_role_policy_attachment" "s3_attachment" {
+  role       = aws_iam_role.main.name
+  policy_arn = aws_iam_policy.s3_list.arn
 }
 
-resource "aws_iam_instance_profile" "ec2_profile" {
+resource "aws_iam_instance_profile" "main" {
   name = "lab07-ec2-profile"
-  role = aws_iam_role.ec2_role.name
+  role = aws_iam_role.main.name
 }
 
 ########################
 # EC2 instance
 ########################
 
-resource "aws_instance" "public_ec2" {
+resource "aws_instance" "main" {
   ami                  = data.aws_ami.al2023.id
   instance_type        = "t2.micro"
-  iam_instance_profile = aws_iam_instance_profile.ec2_profile.name
+  iam_instance_profile = aws_iam_instance_profile.main.name
 
   tags = {
     Name        = "lab07-public-ec2"
