@@ -10,7 +10,7 @@ terraform {
 }
 
 provider "aws" {
-  region = "eu-central-1"
+  region = var.region
 }
 
 data "aws_ami" "al2023" {
@@ -89,9 +89,11 @@ resource "aws_volume_attachment" "main" {
 }
 
 output "instance_id" {
-  value = aws_instance.main.id
+  description = "ID of the EC2 instance restored from the snapshot"
+  value       = aws_instance.main.id
 }
 
 output "restored_volume_id" {
-  value = aws_ebs_volume.main.id
+  description = "ID of the EBS volume created from the snapshot"
+  value       = aws_ebs_volume.main.id
 }

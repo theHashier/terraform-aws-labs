@@ -24,17 +24,26 @@ Only a few cents or free if left running.
 - Snapshot must exist from the parent lab
 - Snapshot tag must be:
 
-Key: lab09  
-Value: disasterandrecovery
+  - Key: `lab09`  
+  - Value: `disasterandrecovery`
 
 - Terraform installed
 - AWS CLI configured (`aws configure`)
-- Region: eu-central-1
+- Default region `eu-central-1` (can be overridden with `-var="region=..."`)
 
 ## Run
-- terraform init
-- terraform plan
-- terraform apply or terraform apply -auto-approve (if you are sure)
+
+```bash
+terraform init
+terraform plan
+terraform apply
+```
+
+To override the region:
+
+```bash
+terraform apply -var="region=eu-central-1"
+```
 
 After apply connect to the instance using **SSM Session Manager**.
 
