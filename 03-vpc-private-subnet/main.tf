@@ -25,33 +25,35 @@ data "aws_availability_zones" "available" {
 # VPC
 ########################
 
-resource "aws_vpc" "lab03_vpc" {
-  cidr_block           = "10.30.0.0/16"
+resource "aws_vpc" "main" {
+  cidr_block           = var.vpc_cidr
   enable_dns_support   = true
   enable_dns_hostnames = true
 
   tags = {
-    Name        = "lab03-vpc"
+    Name        = "lab03-vpc-private-subnet"
     Environment = "lab"
     ManagedBy   = "terraform"
-    Owner       = "Eugen"
   }
 }
 
-resource "aws_internet_gateway" "lab03_igw" {
-  vpc_id = aws_vpc.lab03_vpc.id
+resource "aws_internet_gateway" "main" {
+  vpc_id = aws_vpc.main.id
 
   tags = {
     Name        = "lab03-igw"
     Environment = "lab"
     ManagedBy   = "terraform"
-    Owner       = "Eugen"
   }
 }
 
-resource "aws_subnet" "public_subnet_a" {
-  vpc_id                  = aws_vpc.lab03_vpc.id
-  cidr_block              = "10.30.1.0/24"
+########################
+# Subnets
+########################
+
+resource "aws_subnet" "public" {
+  vpc_id                  = aws_vpc.main.id
+  cidr_block              = var.public_subnet_cidr
   availability_zone       = data.aws_availability_zones.available.names[0]
   map_public_ip_on_launch = true
 
@@ -63,9 +65,9 @@ resource "aws_subnet" "public_subnet_a" {
   }
 }
 
-resource "aws_subnet" "private_subnet_a" {
-  vpc_id                  = aws_vpc.lab03_vpc.id
-  cidr_block              = "10.30.2.0/24"
+resource "aws_subnet" "private" {
+  vpc_id                  = aws_vpc.main.id
+  cidr_block              = var.private_subnet_cidr
   availability_zone       = data.aws_availability_zones.available.names[0]
   map_public_ip_on_launch = false
 
@@ -82,7 +84,7 @@ resource "aws_subnet" "private_subnet_a" {
 ########################
 
 resource "aws_route_table" "public_rt" {
-  vpc_id = aws_vpc.lab03_vpc.id
+  vpc_id = aws_vpc.main.id
 
   tags = {
     Name        = "lab03-public-rt"
@@ -95,16 +97,16 @@ resource "aws_route_table" "public_rt" {
 resource "aws_route" "public_internet_access" {
   route_table_id         = aws_route_table.public_rt.id
   destination_cidr_block = "0.0.0.0/0"
-  gateway_id             = aws_internet_gateway.lab03_igw.id
+  gateway_id             = aws_internet_gateway.main.id
 }
 
 resource "aws_route_table_association" "public_subnet_assoc" {
-  subnet_id      = aws_subnet.public_subnet_a.id
+  subnet_id      = aws_subnet.public.id
   route_table_id = aws_route_table.public_rt.id
 }
 
 resource "aws_route_table" "private_rt" {
-  vpc_id = aws_vpc.lab03_vpc.id
+  vpc_id = aws_vpc.main.id
 
   tags = {
     Name        = "lab03-private-rt"
@@ -115,7 +117,7 @@ resource "aws_route_table" "private_rt" {
 }
 
 resource "aws_route_table_association" "private_subnet_assoc" {
-  subnet_id      = aws_subnet.private_subnet_a.id
+  subnet_id      = aws_subnet.private.id
   route_table_id = aws_route_table.private_rt.id
 }
 
@@ -124,7 +126,7 @@ resource "aws_route_table_association" "private_subnet_assoc" {
 ########################
 
 resource "aws_vpc_endpoint" "s3_endpoint" {
-  vpc_id            = aws_vpc.lab03_vpc.id
+  vpc_id            = aws_vpc.main.id
   service_name      = "com.amazonaws.${var.region}.s3"
   vpc_endpoint_type = "Gateway"
   route_table_ids   = [aws_route_table.private_rt.id]
