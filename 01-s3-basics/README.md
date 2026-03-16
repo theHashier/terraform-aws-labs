@@ -1,8 +1,8 @@
 ## Lab 01 – S3 bucket foundations
 
-### Goal
+### Goal and conventions
 
-This lab provisions a **secure S3 bucket** using Terraform with opinionated, production‑style defaults:
+This lab provisions a **secure S3 bucket** using Terraform with opinionated, production‑style defaults and the shared bootcamp conventions (locals, `common_tags`, and provider `default_tags`):
 
 - **Deterministic naming** via a configurable prefix.
 - **Centralized tagging** using `locals` and provider `default_tags`.
