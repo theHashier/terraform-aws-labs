@@ -1,5 +1,5 @@
 terraform {
-  required_version = ">= 1.6.0"
+  required_version = ">= 1.6"
 
   required_providers {
     aws = {
@@ -9,25 +9,32 @@ terraform {
   }
 }
 
-provider "aws" {
-  region = var.region
-}
+locals {
+  project_name = "terraform-aws-labs"
+  lab_id       = "lab-01-s3-basics"
+  environment  = "lab"
 
-########################
-# S3 bucket
-########################
-
-resource "aws_s3_bucket" "main" {
-  bucket_prefix = var.bucket_prefix
-
-  tags = {
-    Name        = "lab01-s3-basics"
-    Environment = "lab"
+  common_tags = {
+    Project     = local.project_name
+    Lab         = local.lab_id
+    Environment = local.environment
     ManagedBy   = "terraform"
   }
+}
+
+provider "aws" {
+  region = var.aws_region
+
+  default_tags {
+    tags = local.common_tags
+  }
+}
+
+resource "aws_s3_bucket" "primary" {
+  bucket_prefix = var.s3_bucket_name_prefix
 
   lifecycle_rule {
-    id      = "expire-temp-objects"
+    id      = "expire-temp-prefix-objects"
     enabled = true
 
     prefix = "temp/"
@@ -38,12 +45,8 @@ resource "aws_s3_bucket" "main" {
   }
 }
 
-########################
-# Bucket protection
-########################
-
-resource "aws_s3_bucket_public_access_block" "main" {
-  bucket = aws_s3_bucket.main.id
+resource "aws_s3_bucket_public_access_block" "primary" {
+  bucket = aws_s3_bucket.primary.id
 
   block_public_acls       = true
   block_public_policy     = true
@@ -51,16 +54,16 @@ resource "aws_s3_bucket_public_access_block" "main" {
   restrict_public_buckets = true
 }
 
-resource "aws_s3_bucket_versioning" "main" {
-  bucket = aws_s3_bucket.main.id
+resource "aws_s3_bucket_versioning" "primary" {
+  bucket = aws_s3_bucket.primary.id
 
   versioning_configuration {
     status = "Enabled"
   }
 }
 
-resource "aws_s3_bucket_server_side_encryption_configuration" "main" {
-  bucket = aws_s3_bucket.main.bucket
+resource "aws_s3_bucket_server_side_encryption_configuration" "primary" {
+  bucket = aws_s3_bucket.primary.bucket
 
   rule {
     apply_server_side_encryption_by_default {
