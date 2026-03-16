@@ -87,13 +87,3 @@ resource "aws_volume_attachment" "main" {
   volume_id   = aws_ebs_volume.main.id
   instance_id = aws_instance.main.id
 }
-
-output "instance_id" {
-  description = "ID of the EC2 instance restored from the snapshot"
-  value       = aws_instance.main.id
-}
-
-output "restored_volume_id" {
-  description = "ID of the EBS volume created from the snapshot"
-  value       = aws_ebs_volume.main.id
-}
