@@ -17,33 +17,39 @@ provider "aws" {
 # VPC
 ########################
 
-resource "aws_vpc" "lab02_vpc" {
-  cidr_block           = "10.0.0.0/16"
+resource "aws_vpc" "main" {
+  cidr_block           = var.vpc_cidr
   enable_dns_support   = true
   enable_dns_hostnames = true
 
   tags = {
-    Name        = "lab02-vpc"
+    Name        = "lab02-vpc-basic"
     Environment = "lab"
     ManagedBy   = "terraform"
-    Owner       = "Eugen"
   }
 }
 
-resource "aws_internet_gateway" "lab02_igw" {
-  vpc_id = aws_vpc.lab02_vpc.id
+########################
+# Internet Gateway
+########################
+
+resource "aws_internet_gateway" "main" {
+  vpc_id = aws_vpc.main.id
 
   tags = {
     Name        = "lab02-igw"
     Environment = "lab"
     ManagedBy   = "terraform"
-    Owner       = "Eugen"
   }
 }
 
-resource "aws_subnet" "public_subnet_a" {
-  vpc_id                  = aws_vpc.lab02_vpc.id
-  cidr_block              = "10.0.1.0/24"
+########################
+# Public subnet
+########################
+
+resource "aws_subnet" "public" {
+  vpc_id                  = aws_vpc.main.id
+  cidr_block              = var.public_subnet_cidr
   availability_zone       = "${var.region}a"
   map_public_ip_on_launch = true
 
@@ -51,28 +57,30 @@ resource "aws_subnet" "public_subnet_a" {
     Name        = "lab02-public-subnet-a"
     Environment = "lab"
     ManagedBy   = "terraform"
-    Owner       = "Eugen"
   }
 }
 
+########################
+# Route table and routes
+########################
+
 resource "aws_route_table" "public_rt" {
-  vpc_id = aws_vpc.lab02_vpc.id
+  vpc_id = aws_vpc.main.id
 
   tags = {
     Name        = "lab02-public-rt"
     Environment = "lab"
     ManagedBy   = "terraform"
-    Owner       = "Eugen"
   }
 }
 
 resource "aws_route" "internet_access" {
   route_table_id         = aws_route_table.public_rt.id
   destination_cidr_block = "0.0.0.0/0"
-  gateway_id             = aws_internet_gateway.lab02_igw.id
+  gateway_id             = aws_internet_gateway.main.id
 }
 
 resource "aws_route_table_association" "public_subnet_a_assoc" {
-  subnet_id      = aws_subnet.public_subnet_a.id
+  subnet_id      = aws_subnet.public.id
   route_table_id = aws_route_table.public_rt.id
 }

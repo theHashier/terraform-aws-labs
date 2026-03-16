@@ -1,9 +1,20 @@
 output "vpc_id" {
   description = "ID of the VPC"
-  value       = aws_vpc.lab02_vpc.id
+  value       = aws_vpc.main.id
 }
 
 output "public_subnet_id" {
   description = "ID of the public subnet"
-  value       = aws_subnet.public_subnet_a.id
+  value       = aws_subnet.public.id
 }
+
+output "vpc_cidr" {
+  description = "CIDR block of the VPC"
+  value       = aws_vpc.main.cidr_block
+}
+
+output "public_subnet_cidr" {
+  description = "CIDR block of the public subnet"
+  value       = aws_subnet.public.cidr_block
+}
+
