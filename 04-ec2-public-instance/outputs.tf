@@ -15,21 +15,21 @@ output "public_dns" {
 
 output "vpc_id" {
   description = "ID of the VPC"
-  value       = aws_vpc.main.id
+  value       = aws_vpc.primary.id
 }
 
 output "public_subnet_id" {
   description = "ID of the public subnet"
-  value       = aws_subnet.public.id
+  value       = aws_subnet.public_a.id
 }
 
 output "vpc_cidr" {
   description = "CIDR block of the VPC"
-  value       = aws_vpc.main.cidr_block
+  value       = aws_vpc.primary.cidr_block
 }
 
 output "public_subnet_cidr" {
   description = "CIDR block of the public subnet"
-  value       = aws_subnet.public.cidr_block
+  value       = aws_subnet.public_a.cidr_block
 }
 
