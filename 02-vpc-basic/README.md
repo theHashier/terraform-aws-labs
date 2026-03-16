@@ -1,8 +1,8 @@
 ## Lab 02 – VPC basics
 
-### Goal and conventions
+### Goal
 
-This lab provisions a **small, production‑style VPC layout** with Terraform—one VPC, one public subnet, and Internet access through an Internet Gateway—using the same shared bootcamp conventions (locals, `common_tags`, and provider `default_tags`).
+This lab provisions a **small, production‑style VPC layout** with Terraform: a single VPC, one public subnet, and Internet access through an Internet Gateway, using the same conventions as the other labs (locals, default tags, and consistent naming).
 
 ### What this lab creates
 
