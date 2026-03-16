@@ -1,31 +1,40 @@
-# Lab 03 – VPC with public and private subnet (no NAT)
+## Lab 03 – VPC with public and private subnet (no NAT)
 
-## What this lab demonstrates
+### Goal
 
-This lab shows how to create a **VPC with both a public and a private subnet** using a layout that is closer to production practice. The public subnet has a route to the Internet Gateway; the private subnet has no internet route. There is no NAT Gateway, so you avoid its hourly cost and anything in the private subnet **cannot reach the internet or S3 yet**.
+This lab provisions a **VPC with both a public and a private subnet** using the same conventions as the other labs (locals, default tags, and consistent naming). The public subnet has a route to the Internet Gateway; the private subnet has no route to the internet. There is no NAT Gateway, so anything in the private subnet **cannot reach the internet or S3 yet**.
 
-## What this lab creates
+### What this lab creates
 
-- **VPC**:
+- **VPC**
   - CIDR `vpc_cidr` (default `10.3.0.0/16`) with DNS support and hostnames enabled.
-  - Tagged with `Name = lab03-vpc-private-subnet`, plus common lab tags.
-- **Internet Gateway** attached to the VPC
-- **Public subnet**:
-  - CIDR `public_subnet_cidr` (default `10.3.1.0/24`) in the first available AZ, with public IP on launch.
-- **Private subnet**:
-  - CIDR `private_subnet_cidr` (default `10.3.2.0/24`) in the same AZ, no public IP, no route to the internet.
-- **Public route table** with default route (0.0.0.0/0) to the IGW, associated to the public subnet
-- **Private route table** with no internet route, associated to the private subnet
+  - Inherits common tags such as `Project`, `Lab`, `Environment`, and `ManagedBy`.
+- **Internet Gateway**
+  - Attached to the primary VPC.
+- **Public subnet (AZ a)**
+  - CIDR `public_subnet_cidr` (default `10.3.1.0/24`) in the first available availability zone.
+  - `map_public_ip_on_launch = true` so instances launched here receive public IPs.
+- **Private subnet (AZ a)**
+  - CIDR `private_subnet_cidr` (default `10.3.2.0/24`) in the same availability zone.
+  - `map_public_ip_on_launch = false` and **no route to the internet**.
+- **Public route table**
+  - Default route `0.0.0.0/0` to the Internet Gateway.
+  - Associated with the public subnet.
+- **Private route table**
+  - No internet route.
+  - Associated with the private subnet.
 
-Later labs can extend this pattern by adding **NAT Gateways** or **VPC endpoints**; this lab is only about understanding the basic public/private subnet split.
+Later labs can extend this pattern by adding **NAT Gateways** or **VPC endpoints**; this lab focuses purely on the public/private subnet split.
 
-## Prerequisites
+### Prerequisites
 
-- Terraform installed
-- AWS CLI configured (e.g. `aws configure`)
-- Default region `eu-central-1` (can be overridden with a variable)
+- Terraform installed.
+- AWS CLI configured (for example, `aws configure`).
+- Default region `eu-central-1` (can be overridden with a variable).
 
-## Usage
+### Usage
+
+From the `03-vpc-private-subnet` directory:
 
 ```bash
 terraform init
@@ -33,36 +42,36 @@ terraform plan
 terraform apply
 ```
 
-To override the region or CIDRs:
+To override the region or CIDR blocks:
 
 ```bash
 terraform apply \
-  -var="region=eu-central-1" \
+  -var="aws_region=eu-central-1" \
   -var="vpc_cidr=10.30.0.0/16" \
   -var="public_subnet_cidr=10.30.1.0/24" \
   -var="private_subnet_cidr=10.30.2.0/24"
 ```
 
-## Outputs
+### Outputs
 
-- **vpc_id** – ID of the VPC
-- **public_subnet_id** – ID of the public subnet
-- **private_subnet_id** – ID of the private subnet
-- **public_route_table_id** – ID of the public route table
-- **private_route_table_id** – ID of the private route table
-- **vpc_cidr** – CIDR block of the VPC
-- **public_subnet_cidr** – CIDR block of the public subnet
-- **private_subnet_cidr** – CIDR block of the private subnet
+- `vpc_id` – ID of the primary VPC.
+- `public_subnet_id` – ID of the public subnet.
+- `private_subnet_id` – ID of the private subnet.
+- `public_route_table_id` – ID of the public route table.
+- `private_route_table_id` – ID of the private route table.
+- `vpc_cidr` – CIDR block of the VPC.
+- `public_subnet_cidr` – CIDR block of the public subnet.
+- `private_subnet_cidr` – CIDR block of the private subnet.
 
-## Cost note
+### Cost note
 
 There is no NAT Gateway (no hourly charges). You pay only for the underlying VPC networking components.
 
-## Cleanup
+### Cleanup
 
 ```bash
 terraform destroy
 ```
 
-This removes the VPC, subnets, and route tables.
+Destroying the lab removes the VPC, subnets, and route tables that were created.
 
