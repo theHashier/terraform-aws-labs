@@ -1,5 +1,5 @@
 terraform {
-  required_version = ">= 1.6.0"
+  required_version = ">= 1.6"
 
   required_providers {
     aws = {
@@ -9,22 +9,40 @@ terraform {
   }
 }
 
+locals {
+  project_name = "terraform-aws-labs"
+  lab_id       = "lab-11-load-balancer-alb"
+  environment  = "lab"
+
+  common_tags = {
+    Name        = local.lab_id
+    Project     = local.project_name
+    Lab         = local.lab_id
+    Environment = local.environment
+    ManagedBy   = "terraform"
+  }
+}
+
 provider "aws" {
-  region = var.region
+  region = var.aws_region
+
+  default_tags {
+    tags = local.common_tags
+  }
 }
 
 ########################
 # Data
 ########################
 
-data "aws_vpc" "default" {
+data "aws_vpc" "vpc_default" {
   default = true
 }
 
-data "aws_subnets" "default" {
+data "aws_subnets" "subnets_default" {
   filter {
     name   = "vpc-id"
-    values = [data.aws_vpc.default.id]
+    values = [data.aws_vpc.vpc_default.id]
   }
 }
 
@@ -43,9 +61,9 @@ data "aws_ami" "al2023" {
 # Security
 ########################
 
-resource "aws_security_group" "alb_sg" {
-  name   = "lab11-alb-sg"
-  vpc_id = data.aws_vpc.default.id
+resource "aws_security_group" "sg_alb" {
+  name   = "lab-11-alb"
+  vpc_id = data.aws_vpc.vpc_default.id
 
   ingress {
     from_port   = 80
@@ -62,15 +80,15 @@ resource "aws_security_group" "alb_sg" {
   }
 }
 
-resource "aws_security_group" "ec2_sg" {
-  name   = "lab11-ec2-sg"
-  vpc_id = data.aws_vpc.default.id
+resource "aws_security_group" "sg_ec2" {
+  name   = "lab-11-ec2"
+  vpc_id = data.aws_vpc.vpc_default.id
 
   ingress {
     from_port       = 80
     to_port         = 80
     protocol        = "tcp"
-    security_groups = [aws_security_group.alb_sg.id]
+    security_groups = [aws_security_group.sg_alb.id]
   }
 
   egress {
@@ -86,34 +104,27 @@ resource "aws_security_group" "ec2_sg" {
 ########################
 
 resource "aws_lb" "alb" {
-  name               = "lab11-alb"
+  name               = "lab-11-alb"
   load_balancer_type = "application"
-  subnets            = data.aws_subnets.default.ids
-  security_groups    = [aws_security_group.alb_sg.id]
-
-  tags = {
-    Name        = "lab11-alb"
-    Environment = "lab"
-    ManagedBy   = "terraform"
-    Owner       = "Eugen"
-  }
+  subnets            = data.aws_subnets.subnets_default.ids
+  security_groups    = [aws_security_group.sg_alb.id]
 }
 
-resource "aws_lb_target_group" "web_tg" {
-  name     = "lab11-web-tg"
+resource "aws_lb_target_group" "tg_web" {
+  name     = "lab-11-web-tg"
   port     = 80
   protocol = "HTTP"
-  vpc_id   = data.aws_vpc.default.id
+  vpc_id   = data.aws_vpc.vpc_default.id
 }
 
-resource "aws_lb_listener" "http" {
+resource "aws_lb_listener" "lis_http" {
   load_balancer_arn = aws_lb.alb.arn
   port              = 80
   protocol          = "HTTP"
 
   default_action {
     type             = "forward"
-    target_group_arn = aws_lb_target_group.web_tg.arn
+    target_group_arn = aws_lb_target_group.tg_web.arn
   }
 }
 
@@ -121,12 +132,12 @@ resource "aws_lb_listener" "http" {
 # Launch template
 ########################
 
-resource "aws_launch_template" "ec2_lt" {
-  name_prefix   = "lab11-ec2-"
+resource "aws_launch_template" "lt" {
+  name_prefix   = "lab-11-ec2-"
   image_id      = data.aws_ami.al2023.id
   instance_type = "t2.micro"
 
-  vpc_security_group_ids = [aws_security_group.ec2_sg.id]
+  vpc_security_group_ids = [aws_security_group.sg_ec2.id]
 
   user_data = base64encode(<<EOF
 #!/bin/bash
@@ -141,7 +152,7 @@ EOF
     resource_type = "instance"
 
     tags = {
-      Name = "lab11-asg-ec2"
+      Name = "${local.lab_id}-ec2"
     }
   }
 }
@@ -151,24 +162,24 @@ EOF
 ########################
 
 resource "aws_autoscaling_group" "asg" {
-  name = "lab11-asg"
+  name = "lab-11-asg"
 
   min_size         = 2
   desired_capacity = 2
   max_size         = 3
 
-  vpc_zone_identifier = data.aws_subnets.default.ids
+  vpc_zone_identifier = data.aws_subnets.subnets_default.ids
 
   launch_template {
-    id      = aws_launch_template.ec2_lt.id
+    id      = aws_launch_template.lt.id
     version = "$Latest"
   }
 
-  target_group_arns = [aws_lb_target_group.web_tg.arn]
+  target_group_arns = [aws_lb_target_group.tg_web.arn]
 
   tag {
     key                 = "Name"
-    value               = "lab11-asg-instance"
+    value               = "${local.lab_id}-asg-instance"
     propagate_at_launch = true
   }
 }
