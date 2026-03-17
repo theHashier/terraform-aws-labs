@@ -1,5 +1,5 @@
 terraform {
-  required_version = ">= 1.6.0"
+  required_version = ">= 1.6"
 
   required_providers {
     aws = {
@@ -9,8 +9,26 @@ terraform {
   }
 }
 
+locals {
+  project_name = "terraform-aws-labs"
+  lab_id       = "lab-10-auto-scaling-group"
+  environment  = "lab"
+
+  common_tags = {
+    Name        = local.lab_id
+    Project     = local.project_name
+    Lab         = local.lab_id
+    Environment = local.environment
+    ManagedBy   = "terraform"
+  }
+}
+
 provider "aws" {
-  region = var.region
+  region = var.aws_region
+
+  default_tags {
+    tags = local.common_tags
+  }
 }
 
 ########################
@@ -32,8 +50,8 @@ data "aws_ami" "al2023" {
 # Launch template
 ########################
 
-resource "aws_launch_template" "ec2_template" {
-  name_prefix   = "lab10-ec2-"
+resource "aws_launch_template" "lt" {
+  name_prefix   = "lab-10-ec2-"
   image_id      = data.aws_ami.al2023.id
   instance_type = "t2.micro"
 
@@ -41,10 +59,7 @@ resource "aws_launch_template" "ec2_template" {
     resource_type = "instance"
 
     tags = {
-      Name        = "lab10-asg-ec2"
-      Environment = "lab"
-      ManagedBy   = "terraform"
-      Owner       = "Eugen"
+      Name = "${local.lab_id}-ec2"
     }
   }
 }
@@ -54,22 +69,22 @@ resource "aws_launch_template" "ec2_template" {
 ########################
 
 resource "aws_autoscaling_group" "asg" {
-  name = "lab10-asg"
+  name = "lab-10-asg"
 
   min_size         = 1
   desired_capacity = 1
   max_size         = 2
 
   launch_template {
-    id      = aws_launch_template.ec2_template.id
+    id      = aws_launch_template.lt.id
     version = "$Latest"
   }
 
-  availability_zones = ["${var.region}a", "${var.region}b"]
+  availability_zones = ["${var.aws_region}a", "${var.aws_region}b"]
 
   tag {
     key                 = "Name"
-    value               = "lab10-asg-instance"
+    value               = "${local.lab_id}-asg-instance"
     propagate_at_launch = true
   }
 }
