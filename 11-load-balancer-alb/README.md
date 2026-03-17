@@ -37,8 +37,9 @@ terraform apply -var="aws_region=eu-central-1"
 ### Outputs
 
 - **alb_dns_name** – DNS name of the ALB
+- **alb_http_url** – Full HTTP URL for the ALB (recommended)
 
-Open `http://<alb_dns_name>` in a browser. Reload a few times; the “Hello from …” hostname or IP may change as the ALB switches between the two instances.
+Open the URL from `alb_http_url` in a browser. Reload a few times; the “Hello from …” hostname or IP may change as the ALB switches between the two instances.
 
 ### Cleanup
 
