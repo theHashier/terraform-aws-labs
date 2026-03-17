@@ -1,5 +1,5 @@
 terraform {
-  required_version = ">= 1.6.0"
+  required_version = ">= 1.6"
 
   required_providers {
     aws = {
@@ -9,68 +9,70 @@ terraform {
   }
 }
 
+locals {
+  project_name = "terraform-aws-labs"
+  lab_id       = "lab-13b-cloudwatch-sns-alerts"
+  environment  = "lab"
+
+  common_tags = {
+    Name        = local.lab_id
+    Project     = local.project_name
+    Lab         = local.lab_id
+    Environment = local.environment
+    ManagedBy   = "terraform"
+  }
+}
+
 provider "aws" {
-  region = var.region
+  region = var.aws_region
+
+  default_tags {
+    tags = local.common_tags
+  }
 }
 
 ########################
 # VPC
 ########################
 
-resource "aws_vpc" "main" {
+resource "aws_vpc" "vpc" {
   cidr_block           = "10.14.0.0/16"
   enable_dns_support   = true
   enable_dns_hostnames = true
-
-  tags = {
-    Name = "lab14-vpc"
-  }
 }
 
-resource "aws_subnet" "main" {
-  vpc_id                  = aws_vpc.main.id
+resource "aws_subnet" "subnet_public_a" {
+  vpc_id                  = aws_vpc.vpc.id
   cidr_block              = "10.14.1.0/24"
-  availability_zone       = "${var.region}a"
+  availability_zone       = "${var.aws_region}a"
   map_public_ip_on_launch = true
-
-  tags = {
-    Name = "lab14-subnet"
-  }
 }
 
-resource "aws_internet_gateway" "main" {
-  vpc_id = aws_vpc.main.id
-
-  tags = {
-    Name = "lab14-igw"
-  }
+resource "aws_internet_gateway" "igw" {
+  vpc_id = aws_vpc.vpc.id
 }
 
-resource "aws_route_table" "main" {
-  vpc_id = aws_vpc.main.id
+resource "aws_route_table" "rt_public" {
+  vpc_id = aws_vpc.vpc.id
 
   route {
     cidr_block = "0.0.0.0/0"
-    gateway_id = aws_internet_gateway.main.id
-  }
-
-  tags = {
-    Name = "lab14-rt"
+    gateway_id = aws_internet_gateway.igw.id
   }
 }
 
-resource "aws_route_table_association" "main" {
-  subnet_id      = aws_subnet.main.id
-  route_table_id = aws_route_table.main.id
+resource "aws_route_table_association" "rta_public_a" {
+  subnet_id      = aws_subnet.subnet_public_a.id
+  route_table_id = aws_route_table.rt_public.id
 }
 
 ########################
 # Security
 ########################
 
-resource "aws_security_group" "ec2" {
-  name   = "lab14-ec2-sg"
-  vpc_id = aws_vpc.main.id
+resource "aws_security_group" "sg_ec2" {
+  name   = "lab-13b-ec2"
+  vpc_id = aws_vpc.vpc.id
 
   egress {
     from_port   = 0
@@ -79,9 +81,6 @@ resource "aws_security_group" "ec2" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  tags = {
-    Name = "lab14-ec2-sg"
-  }
 }
 
 ########################
@@ -102,12 +101,12 @@ data "aws_ami" "amazon_linux_2" {
 # EC2 instance
 ########################
 
-resource "aws_instance" "main" {
+resource "aws_instance" "ec2" {
   ami           = data.aws_ami.amazon_linux_2.id
   instance_type = "t2.micro"
-  subnet_id     = aws_subnet.main.id
+  subnet_id     = aws_subnet.subnet_public_a.id
 
-  vpc_security_group_ids = [aws_security_group.ec2.id]
+  vpc_security_group_ids = [aws_security_group.sg_ec2.id]
 
   # Generate CPU load in background to trigger the CloudWatch alarm for testing.
   user_data = <<-EOF
@@ -116,25 +115,18 @@ yes > /dev/null &
 yes > /dev/null &
 EOF
 
-  tags = {
-    Name = "lab14-ec2"
-  }
 }
 
 ########################
 # SNS topic
 ########################
 
-resource "aws_sns_topic" "alerts" {
-  name = "lab14-cloudwatch-alerts"
-
-  tags = {
-    Name = "lab14-cloudwatch-alerts"
-  }
+resource "aws_sns_topic" "sns_alerts" {
+  name = "lab-13b-cloudwatch-alerts"
 }
 
-resource "aws_sns_topic_subscription" "email" {
-  topic_arn = aws_sns_topic.alerts.arn
+resource "aws_sns_topic_subscription" "sub_email" {
+  topic_arn = aws_sns_topic.sns_alerts.arn
   protocol  = "email"
   endpoint  = var.email_address
 }
@@ -144,9 +136,9 @@ resource "aws_sns_topic_subscription" "email" {
 ########################
 
 resource "aws_cloudwatch_metric_alarm" "cpu_high" {
-  alarm_name          = "lab14-ec2-cpu-high"
+  alarm_name          = "lab-13b-ec2-cpu-high"
   comparison_operator = "GreaterThanThreshold"
-  evaluation_periods  = 1
+  evaluation_periods  = var.evaluation_periods
   metric_name         = "CPUUtilization"
   namespace           = "AWS/EC2"
   period              = var.alarm_period
@@ -155,8 +147,8 @@ resource "aws_cloudwatch_metric_alarm" "cpu_high" {
   alarm_description   = "EC2 CPU utilization above threshold (sends to SNS)"
 
   dimensions = {
-    InstanceId = aws_instance.main.id
+    InstanceId = aws_instance.ec2.id
   }
 
-  alarm_actions = [aws_sns_topic.alerts.arn]
+  alarm_actions = [aws_sns_topic.sns_alerts.arn]
 }
