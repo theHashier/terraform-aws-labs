@@ -1,12 +1,12 @@
-# Lab 15 – EventBridge automation with S3 and SNS
+## Lab 14 – EventBridge automation with S3 and SNS
 
-## What this lab demonstrates
+### Goal
 
 This lab shows how **Amazon EventBridge can react to events from S3 and fan them out through SNS**. When an object is created in an S3 bucket, EventBridge matches the event against a rule and forwards it to an SNS topic, which sends an **email notification**.
 
 It focuses on the **event-driven wiring** between services (S3 → EventBridge → SNS) rather than any complex compute.
 
-## Architecture
+### Architecture
 
 ```
 S3 bucket (PutObject)
@@ -17,7 +17,7 @@ EventBridge rule (filter on bucket)
         │
         │ target
         ▼
-SNS topic (lab15-eventbridge-notifications)
+SNS topic (lab-14-eventbridge-notifications)
         │
         │ email subscription
         ▼
@@ -28,7 +28,7 @@ Your email inbox
 - **EventBridge** receives the event, matches it against the rule with a filter on the specific S3 bucket name, and sends matching events to the target.
 - **SNS** is the target. EventBridge publishes the event to the SNS topic, which then sends an email to subscribed addresses.
 
-## What this lab creates
+### What this lab creates
 
 - **S3 bucket** (`bucket_prefix` based) used as the event source
 - **Bucket public access block** (to keep the bucket private)
@@ -38,7 +38,7 @@ Your email inbox
 - **EventBridge target** that routes matched events to the SNS topic
 - **SNS topic policy** that allows **EventBridge** to publish to the SNS topic for this rule
 
-## Prerequisites
+### Prerequisites
 
 - Terraform installed
 - AWS CLI configured (e.g. `aws configure`)
@@ -48,9 +48,9 @@ Your email inbox
   - Enable **“Send notifications to Amazon EventBridge”** for this region so that S3 object events are delivered to EventBridge.
   - Without this, the EventBridge rule in this lab will never receive the S3 events.
 
-Default region is `eu-central-1`, but you can override it with `-var="region=..."`.
+Default region is `eu-central-1`, but you can override it with `-var="aws_region=..."`.
 
-## Usage
+### Usage
 
 Initialize and apply:
 
@@ -86,13 +86,13 @@ You can also upload from the AWS Console or create multiple files; each PutObjec
 
 Within a short time after each upload, EventBridge should route the event to SNS and you should receive an **email notification**.
 
-## Outputs
+### Outputs
 
 - **bucket_name** – Name of the S3 bucket that emits events
 - **sns_topic_arn** – ARN of the SNS topic that receives EventBridge events
 - **eventbridge_rule_arn** – ARN of the EventBridge rule
 
-## Cleanup
+### Cleanup
 
 Before destroying, empty the S3 bucket to avoid errors (either via AWS Console or CLI). For example:
 
