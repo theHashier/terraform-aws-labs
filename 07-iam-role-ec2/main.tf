@@ -1,5 +1,5 @@
 terraform {
-  required_version = ">= 1.6.0"
+  required_version = ">= 1.6"
 
   required_providers {
     aws = {
@@ -9,8 +9,26 @@ terraform {
   }
 }
 
+locals {
+  project_name = "terraform-aws-labs"
+  lab_id       = "lab-07-iam-role-ec2"
+  environment  = "lab"
+
+  common_tags = {
+    Name        = local.lab_id
+    Project     = local.project_name
+    Lab         = local.lab_id
+    Environment = local.environment
+    ManagedBy   = "terraform"
+  }
+}
+
 provider "aws" {
-  region = var.region
+  region = var.aws_region
+
+  default_tags {
+    tags = local.common_tags
+  }
 }
 
 ########################
@@ -32,8 +50,8 @@ data "aws_ami" "al2023" {
 # IAM
 ########################
 
-resource "aws_iam_role" "main" {
-  name = "lab07-ec2-role"
+resource "aws_iam_role" "role_ec2" {
+  name = "lab-07-ec2-role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -47,8 +65,8 @@ resource "aws_iam_role" "main" {
   })
 }
 
-resource "aws_iam_policy" "s3_list" {
-  name = "lab07-s3-list-policy"
+resource "aws_iam_policy" "policy_s3_list" {
+  name = "lab-07-s3-list"
 
   policy = jsonencode({
     Version = "2012-10-17"
@@ -62,29 +80,22 @@ resource "aws_iam_policy" "s3_list" {
   })
 }
 
-resource "aws_iam_role_policy_attachment" "s3_attachment" {
-  role       = aws_iam_role.main.name
-  policy_arn = aws_iam_policy.s3_list.arn
+resource "aws_iam_role_policy_attachment" "attach_s3_list" {
+  role       = aws_iam_role.role_ec2.name
+  policy_arn = aws_iam_policy.policy_s3_list.arn
 }
 
-resource "aws_iam_instance_profile" "main" {
-  name = "lab07-ec2-profile"
-  role = aws_iam_role.main.name
+resource "aws_iam_instance_profile" "profile_ec2" {
+  name = "lab-07-ec2-profile"
+  role = aws_iam_role.role_ec2.name
 }
 
 ########################
 # EC2 instance
 ########################
 
-resource "aws_instance" "main" {
+resource "aws_instance" "ec2" {
   ami                  = data.aws_ami.al2023.id
   instance_type        = "t2.micro"
-  iam_instance_profile = aws_iam_instance_profile.main.name
-
-  tags = {
-    Name        = "lab07-public-ec2"
-    Environment = "lab"
-    ManagedBy   = "terraform"
-    Owner       = "Eugen"
-  }
+  iam_instance_profile = aws_iam_instance_profile.profile_ec2.name
 }

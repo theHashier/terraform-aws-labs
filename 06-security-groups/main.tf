@@ -15,6 +15,7 @@ locals {
   environment  = "lab"
 
   common_tags = {
+    Name        = local.lab_id
     Project     = local.project_name
     Lab         = local.lab_id
     Environment = local.environment
@@ -34,7 +35,7 @@ provider "aws" {
 # VPC
 ########################
 
-resource "aws_vpc" "primary" {
+resource "aws_vpc" "vpc" {
   cidr_block           = var.vpc_cidr
   enable_dns_support   = true
   enable_dns_hostnames = true
@@ -44,10 +45,10 @@ resource "aws_vpc" "primary" {
 # Security group
 ########################
 
-resource "aws_security_group" "web_ssh" {
+resource "aws_security_group" "sg_web" {
   name        = "lab-06-web-ssh"
   description = "Allow SSH, HTTP, and HTTPS from allowed CIDR"
-  vpc_id      = aws_vpc.primary.id
+  vpc_id      = aws_vpc.vpc.id
 
   ingress {
     description = "ssh"

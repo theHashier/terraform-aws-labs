@@ -15,6 +15,7 @@ locals {
   environment  = "lab"
 
   common_tags = {
+    Name        = local.lab_id
     Project     = local.project_name
     Lab         = local.lab_id
     Environment = local.environment
@@ -34,45 +35,45 @@ provider "aws" {
 # VPC
 ########################
 
-resource "aws_vpc" "primary" {
+resource "aws_vpc" "vpc" {
   cidr_block           = var.vpc_cidr
   enable_dns_hostnames = true
   enable_dns_support   = true
 }
 
-resource "aws_internet_gateway" "primary" {
-  vpc_id = aws_vpc.primary.id
+resource "aws_internet_gateway" "igw" {
+  vpc_id = aws_vpc.vpc.id
 }
 
-resource "aws_subnet" "public_a" {
-  vpc_id                  = aws_vpc.primary.id
+resource "aws_subnet" "subnet_public_a" {
+  vpc_id                  = aws_vpc.vpc.id
   cidr_block              = var.public_subnet_cidr
   map_public_ip_on_launch = true
   availability_zone       = "${var.aws_region}a"
 }
 
-resource "aws_route_table" "public" {
-  vpc_id = aws_vpc.primary.id
+resource "aws_route_table" "rt_public" {
+  vpc_id = aws_vpc.vpc.id
 
   route {
     cidr_block = "0.0.0.0/0"
-    gateway_id = aws_internet_gateway.primary.id
+    gateway_id = aws_internet_gateway.igw.id
   }
 }
 
-resource "aws_route_table_association" "public_subnet_a" {
-  subnet_id      = aws_subnet.public_a.id
-  route_table_id = aws_route_table.public.id
+resource "aws_route_table_association" "rta_public_a" {
+  subnet_id      = aws_subnet.subnet_public_a.id
+  route_table_id = aws_route_table.rt_public.id
 }
 
 ########################
 # Security
 ########################
 
-resource "aws_security_group" "ssh" {
+resource "aws_security_group" "sg_ssh" {
   name        = "lab-04-ssh"
   description = "Allow SSH access for lab 04"
-  vpc_id      = aws_vpc.primary.id
+  vpc_id      = aws_vpc.vpc.id
 
   ingress {
     from_port   = 22
@@ -107,10 +108,10 @@ data "aws_ami" "al2023" {
 # EC2 instance
 ########################
 
-resource "aws_instance" "public" {
+resource "aws_instance" "ec2" {
   ami                    = data.aws_ami.al2023.id
   instance_type          = "t2.micro"
-  subnet_id              = aws_subnet.public_a.id
-  vpc_security_group_ids = [aws_security_group.ssh.id]
+  subnet_id              = aws_subnet.subnet_public_a.id
+  vpc_security_group_ids = [aws_security_group.sg_ssh.id]
   key_name               = var.key_name
 }
