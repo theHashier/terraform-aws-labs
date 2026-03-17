@@ -1,10 +1,10 @@
-# Lab 12 – ALB health checks
+## Lab 12 – ALB health checks
 
-## What this lab demonstrates
+### Goal
 
 This lab shows how an **Application Load Balancer (ALB) health check** works. The ALB sends periodic HTTP requests to the target. If the instance responds with 200, it is **healthy** and receives traffic; if it stops responding, it becomes **unhealthy** and the ALB returns 503. You simulate a failure by stopping Apache and watch the target go unhealthy, then recover it.
 
-## What this lab creates
+### What this lab creates
 
 - **VPC** with two public subnets, Internet Gateway, and route table
 - **Security groups** for the ALB (HTTP 80 from internet) and EC2 (HTTP 80 from ALB only)
@@ -14,13 +14,15 @@ This lab shows how an **Application Load Balancer (ALB) health check** works. Th
 
 Traffic: **User → ALB → Target Group → EC2**. The ALB health-checks `http://EC2:80/`.
 
-## Prerequisites
+### Prerequisites
 
-- Terraform installed
-- AWS CLI configured (e.g. `aws configure`)
-- Default region `eu-central-1` (can be overridden with a variable)
+- Terraform installed.
+- AWS CLI configured (for example, `aws configure`).
+- Default region `eu-central-1` (can be overridden with a variable).
 
-## Usage
+### Usage
+
+From the `12-health-checks` directory:
 
 ```bash
 terraform init
@@ -31,16 +33,17 @@ terraform apply
 To override the region:
 
 ```bash
-terraform apply -var="region=eu-central-1"
+terraform apply -var="aws_region=eu-central-1"
 ```
 
-## Outputs
+### Outputs
 
-- **alb_dns** – DNS name of the ALB
+- `alb_dns_name` – DNS name of the ALB.
+- `alb_http_url` – Full HTTP URL for the ALB (recommended).
 
-Open `http://<alb_dns>` in a browser; you should see `"healthy"` (instance is healthy).
+Open the URL from `alb_http_url` in a browser; you should see `"healthy"` (instance is healthy).
 
-## Health check experiment
+### Health check experiment
 
 1. **Connect** to the EC2 instance via **EC2 → Connect → Session Manager**. Run `curl localhost` → `"healthy"`.
 2. **Simulate failure:** `sudo systemctl stop httpd`. The app is down.
