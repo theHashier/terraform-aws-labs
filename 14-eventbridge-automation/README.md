@@ -43,10 +43,14 @@ Your email inbox
 - Terraform installed
 - AWS CLI configured (e.g. `aws configure`)
 - An **email address** you can access (to confirm the SNS subscription and receive test alerts)
-- **S3 events to EventBridge enabled** in the AWS account/region you are using:
+- **S3 events to EventBridge enabled globally** in the AWS account/region you are using:
   - In the AWS console, go to **S3 → Settings → Event notifications** (or similar section).
   - Enable **“Send notifications to Amazon EventBridge”** for this region so that S3 object events are delivered to EventBridge.
-  - Without this, the EventBridge rule in this lab will never receive the S3 events.
+- **EventBridge events enabled on the lab bucket itself** (per‑bucket setting):
+  - After `terraform apply`, go to **S3 → Buckets → `<bucket_name>` → Properties**.
+  - Find the **Event notifications / EventBridge** section.
+  - Make sure **“Send events to Amazon EventBridge”** (or equivalent toggle) is **enabled** for this bucket.
+  - Without this, the EventBridge rule in this lab will never receive the S3 events from this bucket.
 
 Default region is `eu-central-1`, but you can override it with `-var="aws_region=..."`.
 
